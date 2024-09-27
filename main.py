@@ -105,17 +105,17 @@ def main(date_start, date_end, save_path):
                 )
 
         # Noon marker
-        pdf.set_font(font_family, font_style, 12)
+        pdf.set_font(font_family, font_style, 14)
         pdf.set_line_width(1)
         pdf.set_draw_color(255, 255, 255)
         pdf.set_fill_color(255, 255, 255)
-        pdf.set_text_color(102, 102, 102)
+        pdf.set_text_color(51, 51, 51)
 
         text = '12'
         width = pdf.get_string_width(text)
 
-        pdf.set_xy((13.13+x_off)-(width/2), 82.5)
-        pdf.cell(width, 2.6, text=text, align='C', fill=True, border=1)
+        pdf.set_xy((13.13+x_off)-(width/2), 82.275)
+        pdf.cell(width, 3, text=text, align='C', fill=True, border=1)
 
     # Save
     pdf.output(save_path)
