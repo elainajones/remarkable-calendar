@@ -3,7 +3,6 @@ import argparse
 from datetime import datetime, timedelta
 
 import dateparser
-from PIL import ImageFont
 from fpdf import FPDF
 
 
@@ -71,43 +70,62 @@ def main(date_start, date_end, save_path):
         pdf.set_xy((33.5+x_off), 15)
         pdf.cell(width, 5.75, text=text, align='R')
 
+
+        pdf.set_draw_color(51, 51, 51)
+        pdf.set_line_width(0.5)
+        pdf.line(
+            29.625 + x_off,
+            7.74,
+            29.625 + x_off,
+            20.246,
+        )
+
+        # Grid
+        pdf.set_draw_color(179, 179, 179)
+        pdf.set_line_width(0.25)
+
+        for x in range(24):
+            pdf.line(
+                7.63 + x_off,
+                23.27580 + 5.5*x,
+                101.13 + x_off,
+                23.27 + 5.5*x,
+            )
+        for x in range(18):
+            if x == 2:
+                pdf.set_draw_color(102, 102, 102)
+                pdf.set_line_width(0.5)
+                pdf.line(
+                    7.62500 + (5.5*x) + x_off,
+                    23.40,
+                    7.62500 + (5.5*x) + x_off,
+                    149.62,
+                )
+            else:
+                pdf.set_draw_color(179, 179, 179)
+                pdf.set_line_width(0.25)
+                pdf.line(
+                    7.62500 + (5.5*x) + x_off,
+                    23.3,
+                    7.62500 + (5.5*x) + x_off,
+                    149.75,
+                )
+
         # Noon marker
         pdf.set_font(font_family, font_style, 12)
+        pdf.set_line_width(1)
+        pdf.set_draw_color(255, 255, 255)
+        pdf.set_fill_color(255, 255, 255)
         pdf.set_text_color(77, 77, 77)
 
         text = '12'
         width = pdf.get_string_width(text)
 
         pdf.set_xy((13.13+x_off)-(width/2), 82.5)
-        pdf.cell(width, 2.6, text=text, align='C')
+        pdf.cell(width, 2.6, text=text, align='C', fill=True, border=1)
 
     # Save
     pdf.output('temp.pdf')
-
-
-
-    #reader = PdfReader(template)
-    #template = reader.pages[0]
-
-    ## for i in range(1, date_days):
-    ##     writer.add_page(template)
-    #writer = PdfWriter()
-    #writer.add_page(template)
-
-    #i = 0
-    #a = annotations.FreeText(
-    #    text=
-    #    rect=(50, 50, 100, 100),
-    #    border_color='00000000',
-    #    font='Gentium Plus',
-    #    font_size='52pt',
-    #    font_color='333333ff',
-    #)
-    #writer.add_annotation(page_number=i, annotation=a)
-
-
-    #with open(save_path, 'wb') as f:
-    #    writer.write(f)
 
 
 if __name__ == '__main__':
