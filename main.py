@@ -8,14 +8,7 @@ from fpdf import FPDF
 
 def main(date_start, date_end, save_path):
     date_days = (date_end - date_start).days
-
-    # Paths
     script_path = os.path.realpath(__file__)
-    template = os.path.join(
-        os.path.dirname(script_path),
-        'res',
-        'template.pdf'
-    )
 
     # Font
     font_file = os.path.join(
@@ -116,7 +109,7 @@ def main(date_start, date_end, save_path):
         pdf.set_line_width(1)
         pdf.set_draw_color(255, 255, 255)
         pdf.set_fill_color(255, 255, 255)
-        pdf.set_text_color(77, 77, 77)
+        pdf.set_text_color(102, 102, 102)
 
         text = '12'
         width = pdf.get_string_width(text)
@@ -125,7 +118,7 @@ def main(date_start, date_end, save_path):
         pdf.cell(width, 2.6, text=text, align='C', fill=True, border=1)
 
     # Save
-    pdf.output('temp.pdf')
+    pdf.output(save_path)
 
 
 if __name__ == '__main__':
