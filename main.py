@@ -23,6 +23,23 @@ def main(date_start, date_end, save_path):
     pdf = FPDF('P', 'mm', 'A4')
     pdf.add_font(family=font_family, style=font_style, fname=font_file)
 
+    date_links = {}
+
+    month = None
+    link_id = None
+    for i in range(date_days):
+        date = (date_start + timedelta(days=i)).strftime('%F')
+        m = (date_start + timedelta(days=i)).strftime('%B')
+        if not month == m:
+            pdf.add_page()
+            link_id = pdf.add_link()
+            pdf.set_link(link_id)
+            month = m
+
+        date_links[date] = {}
+        date_links[date][m] = link_id
+
+
     for i in range(date_days):
         if i == 0:
             pdf.add_page()
@@ -34,36 +51,38 @@ def main(date_start, date_end, save_path):
             x_off = 101.25884
 
         # Month day
+        text = (date_start + timedelta(days=i)).strftime('%d')
+
         pdf.set_font(font_family, font_style, 52)
         pdf.set_text_color(51, 51, 51)
 
-        text = (date_start + timedelta(days=i)).strftime('%d')
         width = pdf.get_string_width(text)
-
         pdf.set_xy((18.56500+x_off)-(width/2), 8.3)
         pdf.cell(width, 11.331, text=text, align='C')
 
         # Week name
+        text = (date_start + timedelta(days=i)).strftime('%A').upper()
+
         pdf.set_font(font_family, font_style, 22)
         pdf.set_text_color(51, 51, 51)
 
-        text = (date_start + timedelta(days=i)).strftime('%A').upper()
         width = pdf.get_string_width(text)
-
         pdf.set_xy((33.5+x_off), 8.5)
         pdf.cell(width, 5.25, text=text, align='R')
 
         # Month name
+        date = (date_start + timedelta(days=i)).strftime('%F')
+        text = (date_start + timedelta(days=i)).strftime('%B')
+        link = date_links[date][text]
+
         pdf.set_font(font_family, font_style, 16)
         pdf.set_text_color(51, 51, 51)
 
-        text = (date_start + timedelta(days=i)).strftime('%B')
         width = pdf.get_string_width(text)
-
         pdf.set_xy((33.5+x_off), 15)
-        pdf.cell(width, 5.75, text=text, align='R')
+        pdf.cell(width, 5.75, text=text, align='R', link=link)
 
-
+        # Separator line
         pdf.set_draw_color(51, 51, 51)
         pdf.set_line_width(0.5)
         pdf.line(
