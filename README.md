@@ -4,8 +4,8 @@
 
 ## Contents
 
-- [What is this](#what-is-this)
-- [How do I use this](#how-do-i-use-this)
+- [What is this?](#what-is-this)
+- [How do I use this?](#how-do-i-use-this)
     - [Prerequisites](#prerequisites)
     - [Setup](#setup)
     - [Usage](#usage)
