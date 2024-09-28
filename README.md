@@ -19,7 +19,7 @@ This has been designed with 1:1 scaling in mind, also allowing for the PDF pages
 
 ## How do I use this?
 
-You can find a pre-made copy of the calendar included in the [latest release here.](https://github.com/elainajones/remarkable-calendar/releases/latest). In the more than likely event this is outdated, you can easily create your own copy following the instructions below.
+You can find a pre-made copy of the calendar included in the [latest release here](https://github.com/elainajones/remarkable-calendar/releases/latest). In the more than likely event this is outdated, you can easily create your own copy following the instructions below.
 
 Once copied to the ReMarkable 2, the PDF will need to be set for landscape viewing with the page fit to the screen width.
 
@@ -34,15 +34,15 @@ Once copied to the ReMarkable 2, the PDF will need to be set for landscape viewi
 
 1. Ensure that both Git and Python3 have been installed.
 2. `git clone https://github.com/elainajones/remarkable-calendar.git`
-  - This will download the code locally on your machine.
+    - This will download the code locally on your machine.
 3. `cd remarkable-calendar`
 4. `python3 -m venv venv`
-  - This will create a [Python3 virtual environment](https://docs.python.org/3/library/venv.html).
+    - This will create a [Python3 virtual environment](https://docs.python.org/3/library/venv.html).
 5. `.\venv\Scripts\activate`
-  - `(venv)` should appear in the shell.
-  - Linux users only: `. venv/bin/activate`
+    - `(venv)` should appear in the shell.
+    - Linux users only: `. venv/bin/activate`
 6. `python3 -m pip install -r requirements.txt`
-  - This will install necessary dependencies.
+    - This will install necessary dependencies.
 
 ### Usage
 
