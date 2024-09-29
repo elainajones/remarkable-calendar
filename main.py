@@ -107,7 +107,7 @@ def main(date_start, date_end, save_path):
         # Vertical grid lines
         for x in range(18):
             if x == 2:
-                pdf.set_draw_color(102, 102, 102)
+                pdf.set_draw_color(26, 26, 26)
                 pdf.set_line_width(0.5)
                 pdf.line(
                     7.62500 + (5.5*x) + x_off,
