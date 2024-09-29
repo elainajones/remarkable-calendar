@@ -54,7 +54,7 @@ def main(date_start, date_end, save_path):
         text = (date_start + timedelta(days=i)).strftime('%d')
 
         pdf.set_font(font_family, font_style, 52)
-        pdf.set_text_color(51, 51, 51)
+        pdf.set_text_color(26, 26, 26)
 
         width = pdf.get_string_width(text)
         pdf.set_xy((18.56500+x_off)-(width/2), 8.3)
@@ -64,7 +64,7 @@ def main(date_start, date_end, save_path):
         text = (date_start + timedelta(days=i)).strftime('%A').upper()
 
         pdf.set_font(font_family, font_style, 22)
-        pdf.set_text_color(51, 51, 51)
+        pdf.set_text_color(26, 26, 26)
 
         width = pdf.get_string_width(text)
         pdf.set_xy((33.5+x_off), 8.5)
@@ -76,14 +76,14 @@ def main(date_start, date_end, save_path):
         link = date_links[date][text]
 
         pdf.set_font(font_family, font_style, 16)
-        pdf.set_text_color(51, 51, 51)
+        pdf.set_text_color(26, 26, 26)
 
         width = pdf.get_string_width(text)
         pdf.set_xy((33.5+x_off), 15)
         pdf.cell(width, 5.75, text=text, align='R', link=link)
 
         # Separator line
-        pdf.set_draw_color(51, 51, 51)
+        pdf.set_draw_color(26, 26, 26)
         pdf.set_line_width(0.5)
         pdf.line(
             29.625 + x_off,
@@ -96,6 +96,7 @@ def main(date_start, date_end, save_path):
         pdf.set_draw_color(179, 179, 179)
         pdf.set_line_width(0.25)
 
+        # Horizontal grid lines
         for x in range(24):
             pdf.line(
                 7.63 + x_off,
@@ -103,6 +104,7 @@ def main(date_start, date_end, save_path):
                 101.13 + x_off,
                 23.27 + 5.5*x,
             )
+        # Vertical grid lines
         for x in range(18):
             if x == 2:
                 pdf.set_draw_color(102, 102, 102)
@@ -128,7 +130,7 @@ def main(date_start, date_end, save_path):
         pdf.set_line_width(1)
         pdf.set_draw_color(255, 255, 255)
         pdf.set_fill_color(255, 255, 255)
-        pdf.set_text_color(51, 51, 51)
+        pdf.set_text_color(26, 26, 26)
 
         text = '12'
         width = pdf.get_string_width(text)
