@@ -49,11 +49,11 @@ def main(date_start, date_end, save_path):
             # Month name
             text = (date_start + timedelta(days=i)).strftime('%B')
 
-            pdf.set_font(font_family, font_style, 46)
+            pdf.set_font(font_family, font_style, 42)
             pdf.set_text_color(26, 26, 26)
 
             width = pdf.get_string_width(text)
-            pdf.set_xy(35.44223+5, 7.5)
+            pdf.set_xy(35.44223+5, 7)
             pdf.cell(width, 14.25, text=text, align='R')
 
             # Month number
@@ -75,6 +75,27 @@ def main(date_start, date_end, save_path):
             width = pdf.get_string_width(text)
             pdf.set_xy(35.44223-(4+width), 15.4)
             pdf.cell(width, 5.75, text=text, align='L')
+
+            # Horizontal grid lines
+            for x in range(6):
+                pdf.set_draw_color(26, 26, 26)
+                pdf.set_line_width(0.5)
+                pdf.line(
+                    7.63,
+                    23.27580 + 25.3*x,
+                    202.35,
+                    23.27 + 25.3*x,
+                )
+            # Vertical grid lines
+            for x in range(8):
+                pdf.set_draw_color(26, 26, 26)
+                pdf.set_line_width(0.5)
+                pdf.line(
+                    7.6 + (27.82*x),
+                    23.3,
+                    7.62500 + (27.82*x),
+                    149.52,
+                )
 
 
         date_links[date] = {}
