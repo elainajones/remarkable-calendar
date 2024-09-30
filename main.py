@@ -76,6 +76,11 @@ def main(date_start, date_end, save_path):
             pdf.set_xy(35.44223-(4+width), 15.4)
             pdf.cell(width, 5.75, text=text, align='L')
 
+            # Weekend shading
+            pdf.set_xy(146.72143, 23.27580)
+            pdf.set_fill_color(230, 230, 230)
+            pdf.rect(146.72143, 23.27580, 55.64, 126.50, style='F')
+
             # Horizontal grid lines
             for x in range(6):
                 pdf.set_draw_color(26, 26, 26)
@@ -83,7 +88,7 @@ def main(date_start, date_end, save_path):
                 pdf.line(
                     7.63,
                     23.27580 + 25.3*x,
-                    202.35,
+                    202.34,
                     23.27 + 25.3*x,
                 )
             # Vertical grid lines
