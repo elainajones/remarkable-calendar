@@ -235,7 +235,6 @@ def main(date_start, date_end, save_path):
             month = m
             page += 1
             pdf.page = page
-            pdf.set_xy(9.875, 25.276)
             # New month, start from top
             x = 0
             y = 0
@@ -253,12 +252,12 @@ def main(date_start, date_end, save_path):
             y += 1
 
         pdf.set_text_color(26, 26, 26)
-        pdf.set_font(font_family, font_style, 16)
+        pdf.set_font(font_family, font_style, 12)
 
         link = date_links[date][text]
 
         width = pdf.get_string_width(text)
-        pdf.set_xy(9.875 + x*x_off, 25.276 + y*y_off)
+        pdf.set_xy(10 + x*x_off, 24.3 + y*y_off)
         pdf.cell(width, 5.75, text=text, align='C', link=link)
 
         x += 1
