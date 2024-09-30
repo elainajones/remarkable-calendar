@@ -86,9 +86,9 @@ def main(date_start, date_end, save_path):
                 pdf.set_draw_color(26, 26, 26)
                 pdf.set_line_width(0.5)
                 pdf.line(
-                    7.63,
+                    7.65,
                     23.27580 + 25.3*x,
-                    202.34,
+                    202.3,
                     23.27 + 25.3*x,
                 )
             # Vertical grid lines
@@ -99,7 +99,7 @@ def main(date_start, date_end, save_path):
                     7.6 + (27.82*x),
                     23.3,
                     7.62500 + (27.82*x),
-                    149.52,
+                    149.75,
                 )
 
 
