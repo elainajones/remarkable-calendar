@@ -53,8 +53,8 @@ def main(date_start, date_end, save_path):
             pdf.set_text_color(26, 26, 26)
 
             width = pdf.get_string_width(text)
-            pdf.set_xy(35.44223+5, 7)
-            pdf.cell(width, 14.25, text=text, align='R')
+            pdf.set_xy(40.5, 6.8)
+            pdf.cell(width, 14, text=text, align='R')
 
             # Month number
             text = (date_start + timedelta(days=i)).strftime('%m')
@@ -63,7 +63,7 @@ def main(date_start, date_end, save_path):
             pdf.set_text_color(26, 26, 26)
 
             width = pdf.get_string_width(text)
-            pdf.set_xy(35.44223-(4+width), 8.5)
+            pdf.set_xy(35.2-(4+width), 8.6)
             pdf.cell(width, 5.25, text=text, align='L')
 
             # Year
@@ -73,7 +73,7 @@ def main(date_start, date_end, save_path):
             pdf.set_text_color(26, 26, 26)
 
             width = pdf.get_string_width(text)
-            pdf.set_xy(35.44223-(4+width), 15.4)
+            pdf.set_xy(35.2-(4+width), 15.2)
             pdf.cell(width, 5.75, text=text, align='L')
 
             # Weekend shading
@@ -125,7 +125,7 @@ def main(date_start, date_end, save_path):
 
         date_links[date][text] = link_id
 
-        pdf.set_font(font_family, font_style, 48)
+        pdf.set_font(font_family, font_style, 42)
         pdf.set_text_color(26, 26, 26)
 
         width = pdf.get_string_width(text)
