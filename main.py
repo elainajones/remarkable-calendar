@@ -102,7 +102,6 @@ def main(date_start, date_end, save_path):
                     149.75,
                 )
 
-
         date_links[date] = {}
         date_links[date][m] = link_id
 
@@ -225,34 +224,44 @@ def main(date_start, date_end, save_path):
 
     page = 0
     month = None
-    #while i in range(date_days):
-    #    date = (date_start + timedelta(days=i)).strftime('%F')
-    #    m = (date_start + timedelta(days=i)).strftime('%B')
-    #    d = (date_start + timedelta(days=i)).strftime('%d')
-    #    week_name = (date_start + timedelta(days=i)).strftime('%A')
+    for i in range(date_days):
+        date = (date_start + timedelta(days=i)).strftime('%F')
+        m = (date_start + timedelta(days=i)).strftime('%B')
+        text = (date_start + timedelta(days=i)).strftime('%d')
+        week_name = (date_start + timedelta(days=i)).strftime('%A')
 
+        # Set proper start of the month.
+        if not month == m:
+            month = m
+            page += 1
+            pdf.page = page
+            pdf.set_xy(9.875, 25.276)
+            # New month, start from top
+            x = 0
+            y = 0
+            for n in week:
+                if n == week_name.lower():
+                    break
+                elif x > 0 and x % 7 == 0:
+                    x = 0
+                    y += 1
+                else:
+                    x += 1
 
-    #    if not month == m:
-    #        for r in range(35 - (date_days % 35)):
+        if x > 0 and x % 7 == 0:
+            x = 0
+            y += 1
 
-    #        r = 0
-    #        while
-    #        page += 1
-    #        pdf.page = page
-    #        month = m
+        pdf.set_text_color(26, 26, 26)
+        pdf.set_font(font_family, font_style, 16)
 
-    #        for n in week:
-    #            if n == week_name.lower():
-    #                break
-    #            offset += 1
+        link = date_links[date][text]
 
+        width = pdf.get_string_width(text)
+        pdf.set_xy(9.875 + x*x_off, 25.276 + y*y_off)
+        pdf.cell(width, 5.75, text=text, align='C', link=link)
 
-
-
-
-    #    offset = 0
-
-    #    while week_name.lower() n
+        x += 1
 
     # Save
     pdf.output(save_path)
