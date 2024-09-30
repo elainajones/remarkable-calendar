@@ -1,11 +1,15 @@
 # ReMarkable Calender
 
-![](img/remarkable_daily.png)
+![Month view](img/remarkable_monthly.png)
+
+![Daily view](img/remarkable_daily.png)
 
 ## Contents
 
 - [What is this?](#what-is-this)
+    - [Features](#features)
 - [How do I use this?](#how-do-i-use-this)
+- [Using the creation script](#using-the-creation-script)
     - [Prerequisites](#prerequisites)
     - [Setup](#setup)
     - [Usage](#usage)
@@ -13,15 +17,28 @@
 
 ## What is this?
 
-A programmatically-created PDF calendar designed for the ReMarkable 2, inspired by the Hobonichi Techo. This contains a simple script to create a calendar for the present year, including necessary resources, such as the TrueTypeFont files for the [Gentium typeface](https://software.sil.org/gentium/).
+A minimal PDF calendar for the ReMarkable 2, inspired by the Hobonichi Techo planner. This PDF calendar is created using a script but a pre-made calendar can be [downloaded from here](https://github.com/elainajones/remarkable-calendar/releases/latest).
 
-This has been designed with 1:1 scaling in mind, also allowing for the PDF pages to be printed. Although PDFs can be read by practically all e-readers and tablets, the formatting of the displayed PDF may not align as perfectly with the screen of other readers.
+### Features
+
+- Optional PDF creation script for custom date ranges.
+- Clickable dates for fast navigation!
+    - From the month view, click the dates to jump to the corresponding day view page.
+    - From the day view, click the month name to jump to the corresponding month view page.
+- Hour rulings for each day.
+- 1:1 scaling suitable for print.
+- A4 document size (also supports US letter)
+- 5.5mm grid line spacing
+- [Gentium Font](https://software.sil.org/gentium/)
+- Spaghetti code?
 
 ## How do I use this?
 
-You can find a pre-made copy of the calendar included in the [latest release here](https://github.com/elainajones/remarkable-calendar/releases/latest). In the more than likely event this is outdated, you can easily create your own copy following the instructions below.
+To use, simply download a copy of the PDF. Once copied to the ReMarkable 2, open the PDF and set the viewing for landscape mode. Be sure to set the page scaling to fit the screen width.
 
-Once copied to the ReMarkable 2, the PDF will need to be set for landscape viewing with the page fit to the screen width.
+Continue reading for instructions using the code included in this repository.
+
+## Using the creation script
 
 ### Prerequisites
 
