@@ -262,19 +262,20 @@ def main(date_start, date_end, save_path):
                     x += 1
 
             # Prepend leading dates
-            for c in range(x, 0, -1):
-                pdf.set_xy(10 + (x-c)*x_off, 24.3)
-                pdf.set_text_color(179, 179, 179)
-                pdf.set_font(font_family, font_style, 14)
+            if page > 1:
+                for c in range(x, 0, -1):
+                    pdf.set_xy(10 + (x-c)*x_off, 24.3)
+                    pdf.set_text_color(179, 179, 179)
+                    pdf.set_font(font_family, font_style, 14)
 
-                d = (date_start + timedelta(days=i))
-                t = (d - timedelta(days=c)).strftime('%d')
+                    d = (date_start + timedelta(days=i))
+                    t = (d - timedelta(days=c)).strftime('%d')
 
-                d = (d - timedelta(days=c)).strftime('%F')
-                link = date_links[d][t]
+                    d = (d - timedelta(days=c)).strftime('%F')
+                    link = date_links[d][t]
 
-                width = pdf.get_string_width(t)
-                pdf.cell(width, 5, text=t, align='C', link=link)
+                    width = pdf.get_string_width(t)
+                    pdf.cell(width, 5, text=t, align='C', link=link)
 
         if x > 0 and x % 7 == 0:
             x = 0
