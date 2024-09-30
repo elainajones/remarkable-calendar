@@ -252,7 +252,7 @@ def main(date_start, date_end, save_path):
             y += 1
 
         pdf.set_text_color(26, 26, 26)
-        pdf.set_font(font_family, font_style, 12)
+        pdf.set_font(font_family, font_style, 14)
 
         link = date_links[date][text]
 
