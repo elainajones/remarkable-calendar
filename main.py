@@ -232,6 +232,20 @@ def main(date_start, date_end, save_path):
 
         # Set proper start of the month.
         if not month == m:
+            if page > 0:
+                for c in range(35 - (x + y*7)):
+                    pdf.set_xy(10 + x*x_off + c*x_off, 24.3 + y*y_off)
+                    pdf.set_text_color(179, 179, 179)
+                    pdf.set_font(font_family, font_style, 14)
+
+                    d = (date_start + timedelta(days=i+c)).strftime('%F')
+                    t = (date_start + timedelta(days=i+c)).strftime('%d')
+
+                    link = date_links[d][t]
+
+                    width = pdf.get_string_width(t)
+                    pdf.cell(width, 5, text=t, align='C', link=link)
+
             month = m
             page += 1
             pdf.page = page
@@ -247,6 +261,7 @@ def main(date_start, date_end, save_path):
                 else:
                     x += 1
 
+            # Prepend leading dates
             for c in range(x, 0, -1):
                 pdf.set_xy(10 + (x-c)*x_off, 24.3)
                 pdf.set_text_color(179, 179, 179)
