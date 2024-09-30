@@ -300,7 +300,7 @@ def main(date_start, date_end, save_path):
 if __name__ == '__main__':
     # Set default interval as string.
     start_date = f'{datetime.today().year}-01-01'
-    end_date = f'{datetime.today().year + 1}-01-01'
+    end_date = f'{datetime.today().year + 1}-02-01'
     # Should be fine for most cases.
     script_path = os.path.realpath(__file__)
     save_path = os.path.join(
