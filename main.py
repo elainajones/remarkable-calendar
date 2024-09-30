@@ -121,11 +121,11 @@ def main(date_start, date_end, save_path):
 
         date_links[date][text] = link_id
 
-        pdf.set_font(font_family, font_style, 52)
+        pdf.set_font(font_family, font_style, 48)
         pdf.set_text_color(26, 26, 26)
 
         width = pdf.get_string_width(text)
-        pdf.set_xy((18.56500+x_off)-(width/2), 8.3)
+        pdf.set_xy((18.56500+x_off)-(width/2), 8.4)
         pdf.cell(width, 11.331, text=text, align='C')
 
         # Week name
