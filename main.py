@@ -36,22 +36,69 @@ def main(date_start, date_end, save_path):
             pdf.set_link(link_id)
             month = m
 
+            # Separator line
+            pdf.set_draw_color(26, 26, 26)
+            pdf.set_line_width(0.5)
+            pdf.line(
+                35.44223,
+                7.74,
+                35.44223,
+                20.246,
+            )
+
+            # Month name
+            text = (date_start + timedelta(days=i)).strftime('%B')
+
+            pdf.set_font(font_family, font_style, 46)
+            pdf.set_text_color(26, 26, 26)
+
+            width = pdf.get_string_width(text)
+            pdf.set_xy(35.44223+5, 7.5)
+            pdf.cell(width, 14.25, text=text, align='R')
+
+            # Month number
+            text = (date_start + timedelta(days=i)).strftime('%m')
+
+            pdf.set_font(font_family, font_style, 22)
+            pdf.set_text_color(26, 26, 26)
+
+            width = pdf.get_string_width(text)
+            pdf.set_xy(35.44223-(4+width), 8.5)
+            pdf.cell(width, 5.25, text=text, align='L')
+
+            # Year
+            text = (date_start + timedelta(days=i)).strftime('%Y')
+
+            pdf.set_font(font_family, font_style, 16)
+            pdf.set_text_color(26, 26, 26)
+
+            width = pdf.get_string_width(text)
+            pdf.set_xy(35.44223-(4+width), 15.4)
+            pdf.cell(width, 5.75, text=text, align='L')
+
+
         date_links[date] = {}
         date_links[date][m] = link_id
-
 
     for i in range(date_days):
         if i == 0:
             pdf.add_page()
+            link_id = pdf.add_link()
+            pdf.set_link(link_id)
             x_off = 0
         elif i % 2 == 0:
             pdf.add_page()
+            link_id = pdf.add_link()
+            pdf.set_link(link_id)
             x_off = 0
         else:
             x_off = 101.25884
 
         # Month day
+        date = (date_start + timedelta(days=i)).strftime('%F')
         text = (date_start + timedelta(days=i)).strftime('%d')
+
+        date_links[date][text] = link_id
 
         pdf.set_font(font_family, font_style, 52)
         pdf.set_text_color(26, 26, 26)
@@ -137,6 +184,49 @@ def main(date_start, date_end, save_path):
 
         pdf.set_xy((13.13+x_off)-(width/2), 82.275)
         pdf.cell(width, 3, text=text, align='C', fill=True, border=1)
+
+    week = [
+        'monday',
+        'tuesday',
+        'wednesday',
+        'thursday',
+        'friday',
+        'saturday',
+        'sunday'
+    ]
+    x_off = 27.82
+    y_off = 25.30
+
+    page = 0
+    month = None
+    #while i in range(date_days):
+    #    date = (date_start + timedelta(days=i)).strftime('%F')
+    #    m = (date_start + timedelta(days=i)).strftime('%B')
+    #    d = (date_start + timedelta(days=i)).strftime('%d')
+    #    week_name = (date_start + timedelta(days=i)).strftime('%A')
+
+
+    #    if not month == m:
+    #        for r in range(35 - (date_days % 35)):
+
+    #        r = 0
+    #        while
+    #        page += 1
+    #        pdf.page = page
+    #        month = m
+
+    #        for n in week:
+    #            if n == week_name.lower():
+    #                break
+    #            offset += 1
+
+
+
+
+
+    #    offset = 0
+
+    #    while week_name.lower() n
 
     # Save
     pdf.output(save_path)
