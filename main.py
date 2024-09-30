@@ -247,9 +247,25 @@ def main(date_start, date_end, save_path):
                 else:
                     x += 1
 
+            for c in range(x, 0, -1):
+                pdf.set_xy(10 + (x-c)*x_off, 24.3)
+                pdf.set_text_color(179, 179, 179)
+                pdf.set_font(font_family, font_style, 14)
+
+                d = (date_start + timedelta(days=i))
+                t = (d - timedelta(days=c)).strftime('%d')
+
+                d = (d - timedelta(days=c)).strftime('%F')
+                link = date_links[d][t]
+
+                width = pdf.get_string_width(t)
+                pdf.cell(width, 5, text=t, align='C', link=link)
+
         if x > 0 and x % 7 == 0:
             x = 0
             y += 1
+        if y > 4:
+            continue
 
         pdf.set_text_color(26, 26, 26)
         pdf.set_font(font_family, font_style, 14)
@@ -258,7 +274,7 @@ def main(date_start, date_end, save_path):
 
         width = pdf.get_string_width(text)
         pdf.set_xy(10 + x*x_off, 24.3 + y*y_off)
-        pdf.cell(width, 5.75, text=text, align='C', link=link)
+        pdf.cell(width, 5, text=text, align='C', link=link)
 
         x += 1
 
