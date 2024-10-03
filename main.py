@@ -14,7 +14,7 @@ COLOR_RULING = (179, 179, 179)
 # Page background (white)
 COLOR_PAGE_BG = (255, 255, 255)
 
-def main(date_start, date_end, save_path):
+def main(date_start, date_end, hour_interval, save_path):
     date_days = (date_end - date_start).days
     script_path = os.path.realpath(__file__)
 
@@ -212,12 +212,12 @@ def main(date_start, date_end, save_path):
         pdf.set_draw_color(COLOR_PAGE_BG)
         pdf.set_fill_color(COLOR_PAGE_BG)
         pdf.set_text_color(COLOR_TEXT)
+        for x in list(range(0, 24, hour_interval))[1:]:
+            text = str(x)
+            width = pdf.get_string_width(text)
 
-        text = '12'
-        width = pdf.get_string_width(text)
-
-        pdf.set_xy((13.13+x_off)-(width/2), 82.275)
-        pdf.cell(width, 3, text=text, align='C', fill=True, border=1)
+            pdf.set_xy((13.13+x_off)-(width/2), 16.275+(5.5*x))
+            pdf.cell(width, 3, text=text, align='C', fill=True, border=1)
 
     week = [
         'monday',
@@ -327,12 +327,14 @@ if __name__ == '__main__':
     )
     parser.add_argument('--start-date', default=start_date)
     parser.add_argument('--end-date', default=end_date)
+    parser.add_argument('--hour-interval', default='12')
     parser.add_argument('--out', default=save_path)
 
     args = parser.parse_args()
     # Convert user input date string to datetime obj
     start_date = dateparser.parse(args.start_date)
     end_date = dateparser.parse(args.end_date)
+    hour_interval = int(args.hour_interval)
     save_path = args.out
 
-    main(start_date, end_date, save_path)
+    main(start_date, end_date, hour_interval, save_path)
