@@ -5,16 +5,34 @@ from datetime import datetime, timedelta
 import dateparser
 from fpdf import FPDF
 
-# Text color (90% gray)
-COLOR_TEXT = (26, 26, 26)
-# Bg color for weekend shading (10% gray)
-COLOR_WEEKEND_BG = (230, 230, 230)
-# Lighter color for grid ruling lines (30% gray)
-COLOR_RULING = (179, 179, 179)
-# Page background (white)
-COLOR_PAGE_BG = (255, 255, 255)
 
 def main(date_start, date_end, hour_interval, save_path):
+    # Text color (90% gray)
+    color_text = (26, 26, 26)
+    # Bg color for weekend shading (10% gray)
+    color_weekend_bg = (230, 230, 230)
+    # Lighter color for grid ruling lines (30% gray)
+    color_ruling = (179, 179, 179)
+    # Page background (white)
+    color_page_bg = (255, 255, 255)
+
+    # x, y coordinates of text cells
+    daily_day_num = (12.186330, 4.48600)
+    daily_day_name = (34.251140, 6.91612)
+    daily_header_sep = (30.00166, 6.80812)
+    daily_month_name = (34.251140, 14.34300)
+    grid_start = (8.00233, 22.62500)
+
+    # Dumb fix for text y position not matching my Inkscape draft
+    # exactly. Need to correct the render position by a fixed value from
+    # guess-and-check. This is probably a quirk with inkscape and doesn't
+    # need to be NASA precise anyway.
+    FIX_FONT_Y_POS = {
+        22: -1.2,
+        16: -1,
+        42: 1.1,
+    }
+
     date_days = (date_end - date_start).days
     script_path = os.path.realpath(__file__)
 
@@ -35,6 +53,8 @@ def main(date_start, date_end, hour_interval, save_path):
 
     month = None
     link_id = None
+    # Iterate the days to make blank month pages. This also creates
+    # page links for the daily view.
     for i in range(date_days):
         date = (date_start + timedelta(days=i)).strftime('%F')
         m = (date_start + timedelta(days=i)).strftime('%B')
@@ -45,7 +65,7 @@ def main(date_start, date_end, hour_interval, save_path):
             month = m
 
             # Separator line
-            pdf.set_draw_color(COLOR_TEXT)
+            pdf.set_draw_color(color_text)
             pdf.set_line_width(0.5)
             pdf.line(
                 35.44223,
@@ -58,7 +78,7 @@ def main(date_start, date_end, hour_interval, save_path):
             text = (date_start + timedelta(days=i)).strftime('%B')
 
             pdf.set_font(font_family, font_style, 42)
-            pdf.set_text_color(COLOR_TEXT)
+            pdf.set_text_color(color_text)
 
             width = pdf.get_string_width(text)
             pdf.set_xy(40.5, 6.8)
@@ -68,7 +88,7 @@ def main(date_start, date_end, hour_interval, save_path):
             text = (date_start + timedelta(days=i)).strftime('%m')
 
             pdf.set_font(font_family, font_style, 22)
-            pdf.set_text_color(COLOR_TEXT)
+            pdf.set_text_color(color_text)
 
             width = pdf.get_string_width(text)
             pdf.set_xy(35.2-(4+width), 8.6)
@@ -78,7 +98,7 @@ def main(date_start, date_end, hour_interval, save_path):
             text = (date_start + timedelta(days=i)).strftime('%Y')
 
             pdf.set_font(font_family, font_style, 16)
-            pdf.set_text_color(COLOR_TEXT)
+            pdf.set_text_color(color_text)
 
             width = pdf.get_string_width(text)
             pdf.set_xy(35.2-(4+width), 15.2)
@@ -86,12 +106,12 @@ def main(date_start, date_end, hour_interval, save_path):
 
             # Weekend shading
             pdf.set_xy(146.72143, 23.27580)
-            pdf.set_fill_color(COLOR_WEEKEND_BG)
+            pdf.set_fill_color(color_weekend_bg)
             pdf.rect(146.72143, 23.27580, 55.64, 126.50, style='F')
 
             # Horizontal grid lines
             for x in range(6):
-                pdf.set_draw_color(COLOR_TEXT)
+                pdf.set_draw_color(color_text)
                 pdf.set_line_width(0.5)
                 pdf.line(
                     7.65,
@@ -101,7 +121,7 @@ def main(date_start, date_end, hour_interval, save_path):
                 )
             # Vertical grid lines
             for x in range(8):
-                pdf.set_draw_color(COLOR_TEXT)
+                pdf.set_draw_color(color_text)
                 pdf.set_line_width(0.5)
                 pdf.line(
                     7.6 + (27.82*x),
@@ -134,7 +154,7 @@ def main(date_start, date_end, hour_interval, save_path):
         date_links[date][text] = link_id
 
         pdf.set_font(font_family, font_style, 42)
-        pdf.set_text_color(COLOR_TEXT)
+        pdf.set_text_color(color_text)
 
         width = pdf.get_string_width(text)
         pdf.set_xy((18.56500+x_off)-(width/2), 8.4)
@@ -144,7 +164,7 @@ def main(date_start, date_end, hour_interval, save_path):
         text = (date_start + timedelta(days=i)).strftime('%A').upper()
 
         pdf.set_font(font_family, font_style, 22)
-        pdf.set_text_color(COLOR_TEXT)
+        pdf.set_text_color(color_text)
 
         width = pdf.get_string_width(text)
         pdf.set_xy((33.5+x_off), 8.5)
@@ -156,14 +176,14 @@ def main(date_start, date_end, hour_interval, save_path):
         link = date_links[date][text]
 
         pdf.set_font(font_family, font_style, 16)
-        pdf.set_text_color(COLOR_TEXT)
+        pdf.set_text_color(color_text)
 
         width = pdf.get_string_width(text)
         pdf.set_xy((33.5+x_off), 15)
         pdf.cell(width, 5.75, text=text, align='R', link=link)
 
         # Separator line
-        pdf.set_draw_color(COLOR_TEXT)
+        pdf.set_draw_color(color_text)
         pdf.set_line_width(0.5)
         pdf.line(
             29.625 + x_off,
@@ -173,7 +193,7 @@ def main(date_start, date_end, hour_interval, save_path):
         )
 
         # Grid
-        pdf.set_draw_color(COLOR_RULING)
+        pdf.set_draw_color(color_ruling)
         pdf.set_line_width(0.25)
 
         # Horizontal grid lines
@@ -188,7 +208,7 @@ def main(date_start, date_end, hour_interval, save_path):
         for x in range(18):
             if x == 2:
                 # Make the second line dark for styling
-                pdf.set_draw_color(COLOR_TEXT)
+                pdf.set_draw_color(color_text)
                 pdf.set_line_width(0.5)
                 pdf.line(
                     7.62500 + (5.5*x) + x_off,
@@ -197,7 +217,7 @@ def main(date_start, date_end, hour_interval, save_path):
                     149.62,
                 )
             else:
-                pdf.set_draw_color(COLOR_RULING)
+                pdf.set_draw_color(color_ruling)
                 pdf.set_line_width(0.25)
                 pdf.line(
                     7.62500 + (5.5*x) + x_off,
@@ -209,9 +229,9 @@ def main(date_start, date_end, hour_interval, save_path):
         # Noon marker
         pdf.set_font(font_family, font_style, 14)
         pdf.set_line_width(1)
-        pdf.set_draw_color(COLOR_PAGE_BG)
-        pdf.set_fill_color(COLOR_PAGE_BG)
-        pdf.set_text_color(COLOR_TEXT)
+        pdf.set_draw_color(color_page_bg)
+        pdf.set_fill_color(color_page_bg)
+        pdf.set_text_color(color_text)
         for x in list(range(0, 24, hour_interval))[1:]:
             text = str(x)
             width = pdf.get_string_width(text)
@@ -248,7 +268,7 @@ def main(date_start, date_end, hour_interval, save_path):
                     pdf.set_xy(10 + x*x_off + c*x_off, 24.3 + y*y_off)
                     # Use lighter ruling color when filling in leftover
                     # spaces with preview of next month dates.
-                    pdf.set_text_color(COLOR_RULING)
+                    pdf.set_text_color(color_ruling)
                     pdf.set_font(font_family, font_style, 14)
 
                     d = (date_start + timedelta(days=i+c)).strftime('%F')
@@ -278,7 +298,7 @@ def main(date_start, date_end, hour_interval, save_path):
             if page > 1:
                 for c in range(x, 0, -1):
                     pdf.set_xy(10 + (x-c)*x_off, 24.3)
-                    pdf.set_text_color(COLOR_RULING)
+                    pdf.set_text_color(color_ruling)
                     pdf.set_font(font_family, font_style, 14)
 
                     d = (date_start + timedelta(days=i))
@@ -296,7 +316,7 @@ def main(date_start, date_end, hour_interval, save_path):
         if y > 4:
             continue
 
-        pdf.set_text_color(COLOR_TEXT)
+        pdf.set_text_color(color_text)
         pdf.set_font(font_family, font_style, 14)
 
         link = date_links[date][text]
