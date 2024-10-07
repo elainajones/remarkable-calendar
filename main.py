@@ -30,7 +30,7 @@ def main(date_start, date_end, hour_interval, save_path):
     #daily_month_name = (34.251140, 14.34300)
     daily_month_name = (daily_header_sep[0] + 3, 14.34300)
     # x, y for daily hour rulings (e.g. 01-23)
-    daily_hour_num = (13.50161, 81.62400)
+    daily_hour_num = (13.50161, 15.624)
 
     # x, y for separator line in header
     monthly_header_sep = (35.7142, 6.80812)
@@ -282,7 +282,10 @@ def main(date_start, date_end, hour_interval, save_path):
             text = str(n)
             width = pdf.get_string_width(text)
 
-            pdf.set_xy((x + x_off) - (width / 2), y + fix_font_y_pos[14])
+            pdf.set_xy(
+                (x + x_off) - (width / 2),
+                y + (5.5 * n) + fix_font_y_pos[14]
+            )
             pdf.cell(width, text=text, align='C', fill=True, border=1)
 
     week = [
