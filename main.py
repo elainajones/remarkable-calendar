@@ -257,7 +257,7 @@ def main(date_start, date_end, hour_interval, save_path):
                     x + 5.5 * n + x_off,
                     y + (0.5 / 2) - (0.25 / 2),
                     x + 5.5 * n + x_off,
-                    y + 5.5 * 23 + (0.5 / 2) - (0.25 / 2),
+                    y + 5.5 * 23 - ((0.5 / 2) - (0.25 / 2)),
                 )
             else:
                 pdf.set_draw_color(color_ruling)
