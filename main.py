@@ -10,9 +10,9 @@ def main(date_start, date_end, hour_interval, save_path, handedness=None):
     if not handedness:
         toolbar = 0
     elif handedness.lower() == 'left':
-        toolbar = 4
-    elif handedness.lower() == 'right':
         toolbar = -4
+    elif handedness.lower() == 'right':
+        toolbar = 4
 
     # Text color (90% gray)
     color_text = (26, 26, 26)
