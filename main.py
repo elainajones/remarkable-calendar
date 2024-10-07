@@ -28,6 +28,16 @@ def main(date_start, date_end, hour_interval, save_path):
     daily_month_name = (daily_header_sep[0] + 3, 14.34300)
     # x, y for daily hour rulings (e.g. 01-23)
     daily_hour_num = (13.50161, 81.62400)
+
+    # x, y for separator line in header
+    monthly_header_sep = (35.7142, 6.80812)
+    # x, y for monthly month name (e.g. June)
+    monthly_month_name = (monthly_header_sep[0] + 4, 4.48600)
+    # x, y for monthly month number (e.g. 06)
+    monthly_month_num = (monthly_header_sep[0] - 3, 6.91612)
+    # x, y for year (e.g. 2024)
+    monthly_year = (monthly_header_sep[0] - 3, 14.34300)
+
     # x, y for top right corner of grid
     grid_start = (8.00233, 22.62500)
 
@@ -76,67 +86,80 @@ def main(date_start, date_end, hour_interval, save_path):
             # Separator line
             pdf.set_draw_color(color_text)
             pdf.set_line_width(0.5)
+
+            x, y = monthly_header_sep
+            # 13mm long
             pdf.line(
-                35.44223,
-                7.74,
-                35.44223,
-                20.246,
+                x,
+                y,
+                x,
+                y + 13,
             )
 
             # Month name
-            text = (date_start + timedelta(days=i)).strftime('%B')
-
             pdf.set_font(font_family, font_style, 42)
             pdf.set_text_color(color_text)
 
+            text = (date_start + timedelta(days=i)).strftime('%B')
             width = pdf.get_string_width(text)
-            pdf.set_xy(40.5, 6.8)
-            pdf.cell(width, 14, text=text, align='R')
+
+            x, y = monthly_month_name
+            pdf.set_xy(x, y + fix_font_y_pos[42])
+            pdf.cell(width, text=text, align='C')
 
             # Month number
-            text = (date_start + timedelta(days=i)).strftime('%m')
-
             pdf.set_font(font_family, font_style, 22)
             pdf.set_text_color(color_text)
 
+            text = (date_start + timedelta(days=i)).strftime('%m')
             width = pdf.get_string_width(text)
-            pdf.set_xy(35.2-(4+width), 8.6)
-            pdf.cell(width, 5.25, text=text, align='L')
+
+            x, y = monthly_month_num
+            pdf.set_xy(x - width, y + fix_font_y_pos[22])
+            pdf.cell(width, text=text, align='C')
 
             # Year
-            text = (date_start + timedelta(days=i)).strftime('%Y')
-
             pdf.set_font(font_family, font_style, 16)
             pdf.set_text_color(color_text)
 
+            text = (date_start + timedelta(days=i)).strftime('%Y')
             width = pdf.get_string_width(text)
-            pdf.set_xy(35.2-(4+width), 15.2)
-            pdf.cell(width, 5.75, text=text, align='L')
+
+            x, y = monthly_year
+            pdf.set_xy(x - width, y + fix_font_y_pos[16])
+            pdf.cell(width, text=text, align='C')
 
             # Weekend shading
-            pdf.set_xy(146.72143, 23.27580)
+            x, y = grid_start
+            pdf.set_xy(x + ((210 - 2 * x) / 7) * 5, y)
             pdf.set_fill_color(color_weekend_bg)
-            pdf.rect(146.72143, 23.27580, 55.64, 126.50, style='F')
+            pdf.rect(
+                x + ((210 - 2 * x) / 7) * 5, y,
+                ((210 - 2 * x) / 7) * 2, 149.12500 - y,
+                style='F'
+            )
 
             # Horizontal grid lines
-            for x in range(6):
-                pdf.set_draw_color(color_text)
-                pdf.set_line_width(0.5)
+            pdf.set_draw_color(color_text)
+            pdf.set_line_width(0.5)
+
+            x, y = grid_start
+            for n in range(6):
+                # page width is 210mm (A4) and grid extends to 149.125mm
                 pdf.line(
-                    7.65,
-                    23.27580 + 25.3*x,
-                    202.3,
-                    23.27 + 25.3*x,
+                    x,
+                    y + ((149.12500 - y) / 5) * n,
+                    210 - x,
+                    y + ((149.12500 - y) / 5) * n,
                 )
             # Vertical grid lines
-            for x in range(8):
-                pdf.set_draw_color(color_text)
-                pdf.set_line_width(0.5)
+            for n in range(8):
+                # page width is 210mm (A4) and grid extends to 149.125mm
                 pdf.line(
-                    7.6 + (27.82*x),
-                    23.3,
-                    7.62500 + (27.82*x),
-                    149.75,
+                    x + ((210 - 2 * x) / 7) * n,
+                    y,
+                    x + ((210 - 2 * x) / 7) * n,
+                    149.12500,
                 )
 
         date_links[date] = {}
@@ -275,79 +298,79 @@ def main(date_start, date_end, hour_interval, save_path):
     page = 0
     month = None
     # Add month numbers with links.
-    for i in range(date_days):
-        date = (date_start + timedelta(days=i)).strftime('%F')
-        m = (date_start + timedelta(days=i)).strftime('%B')
-        text = (date_start + timedelta(days=i)).strftime('%d')
-        week_name = (date_start + timedelta(days=i)).strftime('%A')
+    #for i in range(date_days):
+    #    date = (date_start + timedelta(days=i)).strftime('%F')
+    #    m = (date_start + timedelta(days=i)).strftime('%B')
+    #    text = (date_start + timedelta(days=i)).strftime('%d')
+    #    week_name = (date_start + timedelta(days=i)).strftime('%A')
 
-        # Set proper start of the month.
-        if not month == m:
-            # Don't append dates before the date range to avoid key
-            # errors.
-            if page > 0:
-                for c in range(35 - (x + y*7)):
-                    pdf.set_xy(10 + x*x_off + c*x_off, 24.3 + y*y_off)
-                    # Use lighter ruling color when filling in leftover
-                    # spaces with preview of next month dates.
-                    pdf.set_text_color(color_ruling)
-                    pdf.set_font(font_family, font_style, 14)
+    #    # Set proper start of the month.
+    #    if not month == m:
+    #        # Don't append dates before the date range to avoid key
+    #        # errors.
+    #        if page > 0:
+    #            for c in range(35 - (x + y*7)):
+    #                pdf.set_xy(10 + x*x_off + c*x_off, 24.3 + y*y_off)
+    #                # Use lighter ruling color when filling in leftover
+    #                # spaces with preview of next month dates.
+    #                pdf.set_text_color(color_ruling)
+    #                pdf.set_font(font_family, font_style, 14)
 
-                    d = (date_start + timedelta(days=i+c)).strftime('%F')
-                    t = (date_start + timedelta(days=i+c)).strftime('%d')
+    #                d = (date_start + timedelta(days=i+c)).strftime('%F')
+    #                t = (date_start + timedelta(days=i+c)).strftime('%d')
 
-                    link = date_links[d][t]
+    #                link = date_links[d][t]
 
-                    width = pdf.get_string_width(t)
-                    pdf.cell(width, 5, text=t, align='C', link=link)
+    #                width = pdf.get_string_width(t)
+    #                pdf.cell(width, 5, text=t, align='C', link=link)
 
-            month = m
-            page += 1
-            pdf.page = page
-            # New month, start from top
-            x = 0
-            y = 0
-            for n in week:
-                if n == week_name.lower():
-                    break
-                elif x > 0 and x % 7 == 0:
-                    x = 0
-                    y += 1
-                else:
-                    x += 1
+    #        month = m
+    #        page += 1
+    #        pdf.page = page
+    #        # New month, start from top
+    #        x = 0
+    #        y = 0
+    #        for n in week:
+    #            if n == week_name.lower():
+    #                break
+    #            elif x > 0 and x % 7 == 0:
+    #                x = 0
+    #                y += 1
+    #            else:
+    #                x += 1
 
-            # Prepend leading dates
-            if page > 1:
-                for c in range(x, 0, -1):
-                    pdf.set_xy(10 + (x-c)*x_off, 24.3)
-                    pdf.set_text_color(color_ruling)
-                    pdf.set_font(font_family, font_style, 14)
+    #        # Prepend leading dates
+    #        if page > 1:
+    #            for c in range(x, 0, -1):
+    #                pdf.set_xy(10 + (x-c)*x_off, 24.3)
+    #                pdf.set_text_color(color_ruling)
+    #                pdf.set_font(font_family, font_style, 14)
 
-                    d = (date_start + timedelta(days=i))
-                    t = (d - timedelta(days=c)).strftime('%d')
+    #                d = (date_start + timedelta(days=i))
+    #                t = (d - timedelta(days=c)).strftime('%d')
 
-                    d = (d - timedelta(days=c)).strftime('%F')
-                    link = date_links[d][t]
+    #                d = (d - timedelta(days=c)).strftime('%F')
+    #                link = date_links[d][t]
 
-                    width = pdf.get_string_width(t)
-                    pdf.cell(width, 5, text=t, align='C', link=link)
+    #                width = pdf.get_string_width(t)
+    #                pdf.cell(width, 5, text=t, align='C', link=link)
 
-        if x > 0 and x % 7 == 0:
-            x = 0
-            y += 1
-        if y > 4:
-            continue
+    #    if x > 0 and x % 7 == 0:
+    #        x = 0
+    #        y += 1
+    #    if y > 4:
+    #        continue
 
-        pdf.set_text_color(color_text)
-        pdf.set_font(font_family, font_style, 14)
+    #    pdf.set_text_color(color_text)
+    #    pdf.set_font(font_family, font_style, 14)
 
-        link = date_links[date][text]
+    #    link = date_links[date][text]
 
-        width = pdf.get_string_width(text)
-        pdf.set_xy(10 + x*x_off, 24.3 + y*y_off)
-        pdf.cell(width, 5, text=text, align='C', link=link)
+    #    width = pdf.get_string_width(text)
+    #    pdf.set_xy(10 + x*x_off, 24.3 + y*y_off)
+    #    pdf.cell(width, 5, text=text, align='C', link=link)
 
-        x += 1
+    #    x += 1
 
     # Save
     pdf.output(save_path)
