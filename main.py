@@ -6,7 +6,14 @@ import dateparser
 from fpdf import FPDF
 
 
-def main(date_start, date_end, hour_interval, save_path):
+def main(date_start, date_end, hour_interval, save_path, handedness=None):
+    if not handedness:
+        toolbar = 0
+    elif handedness.lower() == 'left':
+        toolbar = 4
+    elif handedness.lower() == 'right':
+        toolbar = -4
+
     # Text color (90% gray)
     color_text = (26, 26, 26)
     # Bg color for weekend shading (10% gray)
@@ -19,21 +26,19 @@ def main(date_start, date_end, hour_interval, save_path):
     # x, y for top right corner of grid
     grid_start = (8.00233, 22.62500)
 
-    # x, y for daily day number (e.g. 31)
-    daily_day_num = (19.00169, 4.48600)
     # x, y for separator line in header
-    daily_header_sep = (30.00166, 6.80812)
+    daily_header_sep = (toolbar + 30.00166, 6.80812)
+    # x, y for daily day number (e.g. 31)
+    daily_day_num = (toolbar + 19.00169, 4.48600)
     # x, y for daily day name (e.g. Monday)
-    #daily_day_name = (34.251140, 6.91612)
     daily_day_name = (daily_header_sep[0] + 3, 6.91612)
     # x, y for daily month name (e.g. June)
-    #daily_month_name = (34.251140, 14.34300)
     daily_month_name = (daily_header_sep[0] + 3, 14.34300)
     # x, y for daily hour rulings (e.g. 01-23)
-    daily_hour_num = (13.50161, 15.624)
+    daily_hour_num = (toolbar + 13.50161, 15.624)
 
     # x, y for separator line in header
-    monthly_header_sep = (35.7142, 6.80812)
+    monthly_header_sep = (toolbar + 35.7142, 6.80812)
     # x, y for monthly month name (e.g. June)
     monthly_month_name = (monthly_header_sep[0] + 4, 4.48600)
     # x, y for monthly month number (e.g. 06)
@@ -41,7 +46,7 @@ def main(date_start, date_end, hour_interval, save_path):
     # x, y for year (e.g. 2024)
     monthly_year = (monthly_header_sep[0] - 3, 14.34300)
     # x, y for monthly day number (e.g. 31)
-    monthly_day_num = (grid_start[0] + 3, grid_start[1] + 3)
+    monthly_day_num = (toolbar + grid_start[0] + 3, grid_start[1] + 3)
 
     # Dumb fix for text y position not matching my Inkscape draft
     # exactly. Need to correct the render position by a fixed value from
@@ -133,10 +138,10 @@ def main(date_start, date_end, hour_interval, save_path):
 
             # Weekend shading
             x, y = grid_start
-            pdf.set_xy(x + ((210 - 2 * x) / 7) * 5, y)
+            pdf.set_xy(x + ((210 - 2 * x) / 7) * 5 + toolbar, y)
             pdf.set_fill_color(color_weekend_bg)
             pdf.rect(
-                x + ((210 - 2 * x) / 7) * 5, y,
+                x + ((210 - 2 * x) / 7) * 5 + toolbar, y,
                 ((210 - 2 * x) / 7) * 2, 149.12500 - y,
                 style='F'
             )
@@ -149,18 +154,18 @@ def main(date_start, date_end, hour_interval, save_path):
             for n in range(6):
                 # page width is 210mm (A4) and grid extends to 149.125mm
                 pdf.line(
-                    x,
+                    x + toolbar,
                     y + ((149.12500 - y) / 5) * n,
-                    210 - x,
+                    210 - x + toolbar,
                     y + ((149.12500 - y) / 5) * n,
                 )
             # Vertical grid lines
             for n in range(8):
                 # page width is 210mm (A4) and grid extends to 149.125mm
                 pdf.line(
-                    x + ((210 - 2 * x) / 7) * n,
+                    x + ((210 - 2 * x) / 7) * n + toolbar,
                     y,
-                    x + ((210 - 2 * x) / 7) * n,
+                    x + ((210 - 2 * x) / 7) * n + toolbar,
                     149.12500,
                 )
 
@@ -242,9 +247,9 @@ def main(date_start, date_end, hour_interval, save_path):
         x, y = grid_start
         for n in range(24):
             pdf.line(
-                x + x_off,
+                x + x_off + toolbar,
                 y + 5.5 * n,
-                x + 5.5 * 17 + x_off,
+                x + 5.5 * 17 + x_off + toolbar,
                 y + 5.5 * n,
             )
         # Vertical grid lines
@@ -254,18 +259,18 @@ def main(date_start, date_end, hour_interval, save_path):
                 pdf.set_draw_color(color_text)
                 pdf.set_line_width(0.5)
                 pdf.line(
-                    x + 5.5 * n + x_off,
+                    x + 5.5 * n + x_off + toolbar,
                     y + (0.5 / 2) - (0.25 / 2),
-                    x + 5.5 * n + x_off,
+                    x + 5.5 * n + x_off + toolbar,
                     y + 5.5 * 23 - ((0.5 / 2) - (0.25 / 2)),
                 )
             else:
                 pdf.set_draw_color(color_ruling)
                 pdf.set_line_width(0.25)
                 pdf.line(
-                    x + 5.5 * n + x_off,
+                    x + 5.5 * n + x_off + toolbar,
                     y,
-                    x + 5.5 * n + x_off,
+                    x + 5.5 * n + x_off + toolbar,
                     y + 5.5 * 23,
                 )
 
@@ -425,14 +430,25 @@ if __name__ == '__main__':
     )
     parser.add_argument('--start-date', default=start_date)
     parser.add_argument('--end-date', default=end_date)
-    parser.add_argument('--hour-interval', default='12')
+    parser.add_argument(
+        '--hour-interval',
+        type=int,
+        default=12,
+        choices=range(1, 24)
+    )
+    parser.add_argument(
+        '--toolbar-space',
+        default=False,
+        choices=['left', 'right']
+    )
     parser.add_argument('--out', default=save_path)
 
     args = parser.parse_args()
     # Convert user input date string to datetime obj
     start_date = dateparser.parse(args.start_date)
     end_date = dateparser.parse(args.end_date)
-    hour_interval = int(args.hour_interval)
+    hour_interval = args.hour_interval
+    handedness = args.toolbar_space
     save_path = args.out
 
-    main(start_date, end_date, hour_interval, save_path)
+    main(start_date, end_date, hour_interval, save_path, handedness)
