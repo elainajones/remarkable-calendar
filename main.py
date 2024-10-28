@@ -428,11 +428,6 @@ def main(
         # Embrace the recursion (I know. It's bad)
         for p in range(len(month_links)):
             pdf.page = p + 1
-            # VERY dumb hack to getting the correct font size to work.
-            # Somehow this will revert to size 14 EVEN WHEN I CALL
-            # set_font_size(12) IN THE LOOP. For some brain-dead reason
-            # changing the font and back again helps it keep the right one.
-            pdf.set_font_size(14)
             # Limit range of months to 12 since this is the
             # most we can fit in the side bar.
             display_range = month_links[i: 12+i]
@@ -442,7 +437,6 @@ def main(
                 date, link = display_range[d]
                 text = date.strftime('%B')
                 text = text[:3]
-                pdf.set_font_size(12)
                 width = pdf.get_string_width(text)
 
                 x, y = toolbar_links
@@ -456,13 +450,13 @@ def main(
                     # Right handed
                     pdf.set_xy(
                         x - width - 2.25,
-                        y + ((5.5 * 2) * (d + 1)) + fix_font_y_pos[12]
+                        y + ((5.5 * 2) * (d + 1)) + fix_font_y_pos[14]
                     )
                 else:
                     # Left handed
                     pdf.set_xy(
                         x + 2.25,
-                        y + ((5.5 * 2) * (d + 1)) + fix_font_y_pos[12]
+                        y + ((5.5 * 2) * (d + 1)) + fix_font_y_pos[14]
                     )
 
                 pdf.cell(width, text=text, align='C', link=link)
@@ -505,7 +499,6 @@ def main(
                 link = date_links[date.strftime('%Y-%m-01')]['01']
                 text = date.strftime('%B')
                 text = text[:3]
-                pdf.set_font_size(12)
                 width = pdf.get_string_width(text)
 
                 x, y = toolbar_links
