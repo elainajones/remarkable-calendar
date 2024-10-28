@@ -350,7 +350,7 @@ def main(
                     )
                     # Use lighter ruling color when filling in leftover
                     # spaces with preview of next month dates.
-                    pdf.set_text_color(color_ruling)
+                    pdf.set_text_color(color_text_light)
 
                     # Temporary date var
                     t = date.strftime('%d')
@@ -388,7 +388,7 @@ def main(
                 # new month.
                 for n in range(a, 0, -1):
                     pdf.set_xy(x + (a - n) * x_off, y + fix_font_y_pos[14])
-                    pdf.set_text_color(color_ruling)
+                    pdf.set_text_color(color_text_light)
 
                     # Temporary date var
                     d = (date_start + timedelta(days=i))
