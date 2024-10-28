@@ -17,10 +17,10 @@ def main(
     if not handedness:
         toolbar = 0
     elif handedness.lower() == 'left':
-        toolbar = -4
+        toolbar = -6
         toolbar_links = (210 - 12, 15.624 - 5.5/2)
     elif handedness.lower() == 'right':
-        toolbar = 4
+        toolbar = 6
         toolbar_links = (12, 15.624 - 5.5/2)
 
     # Text color (90% gray)
@@ -431,12 +431,19 @@ def main(
             # Limit range of months to 12 since this is the
             # most we can fit in the side bar.
             display_range = month_links[i: 12+i]
+            # VERY dumb bug where the font size changes to the wrong
+            # value EVEN THOUGH I SET IT TO BE 14. Somehow setting it to
+            # a different value makes the following change back to 14
+            # actually persist.
+            pdf.set_font_size(12)
 
             # Embrace the recursion (I know)
             for d in range(len(display_range)):
                 date, link = display_range[d]
                 text = date.strftime('%B')
                 text = text[:3]
+
+                pdf.set_font_size(14)
                 width = pdf.get_string_width(text)
 
                 x, y = toolbar_links
@@ -474,6 +481,7 @@ def main(
         n = 0
         page = pdf.page
         last_month = None
+        pdf.set_font_size(14)
         for p in range(0, date_days, 2):
             date = date_start + timedelta(days=p)
 
@@ -514,13 +522,13 @@ def main(
                     # Right handed
                     pdf.set_xy(
                         x - width - 2.25,
-                        y + ((5.5 * 2) * (d + 1)) + fix_font_y_pos[12]
+                        y + ((5.5 * 2) * (d + 1)) + fix_font_y_pos[14]
                     )
                 else:
                     # Left handed
                     pdf.set_xy(
                         x + 2.25,
-                        y + ((5.5 * 2) * (d + 1)) + fix_font_y_pos[12]
+                        y + ((5.5 * 2) * (d + 1)) + fix_font_y_pos[14]
                     )
 
                 pdf.cell(width, text=text, align='C', link=link)
