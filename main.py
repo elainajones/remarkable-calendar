@@ -353,8 +353,9 @@ def main(
                     pdf.set_text_color(color_text_light)
 
                     # Temporary date var
-                    t = date.strftime('%d')
-                    link = date_links[date.strftime('%F')][t]
+                    d = date_start + timedelta(days=i+n)
+                    t = d.strftime('%d')
+                    link = date_links[d.strftime('%F')][t]
 
                     width = pdf.get_string_width(t)
                     pdf.cell(width, text=t, align='C', link=link)
