@@ -425,6 +425,7 @@ def main(
 
     if margin_links and toolbar:
         i = 0
+        # Embrace the recursion (I know. It's bad)
         for p in range(len(month_links)):
             pdf.page = p + 1
             # VERY dumb hack to getting the correct font size to work.
@@ -474,6 +475,74 @@ def main(
                 pass
             else:
                 i += 1
+
+        i = 0
+        n = 0
+        page = pdf.page
+        last_month = None
+        for p in range(0, date_days, 2):
+            date = date_start + timedelta(days=p)
+
+            if p == 0:
+                date = date + timedelta(days=1)
+                page += 1
+            elif p % 2 == 0:
+                date = date + timedelta(days=1)
+                page += 1
+            else:
+                continue
+
+            pdf.page = page
+
+            month = date.strftime('%B')
+            year_month = date.strftime('%Y-%m')
+
+            display_range = month_links[i: 12+i]
+
+            for d in range(len(display_range)):
+                date, _ = display_range[d]
+                # Get link for first of the month.
+                link = date_links[date.strftime('%Y-%m-01')]['01']
+                text = date.strftime('%B')
+                text = text[:3]
+                pdf.set_font_size(12)
+                width = pdf.get_string_width(text)
+
+                x, y = toolbar_links
+                if all([
+                    year_month == date.strftime('%Y-%m'),
+                ]):
+                    pdf.set_text_color(color_text)
+                    link = None
+                else:
+                    pdf.set_text_color(color_text_light)
+
+                if toolbar > 0:
+                    # Right handed
+                    pdf.set_xy(
+                        x - width - 2.25,
+                        y + ((5.5 * 2) * (d + 1)) + fix_font_y_pos[12]
+                    )
+                else:
+                    # Left handed
+                    pdf.set_xy(
+                        x + 2.25,
+                        y + ((5.5 * 2) * (d + 1)) + fix_font_y_pos[12]
+                    )
+
+                pdf.cell(width, text=text, align='C', link=link)
+
+            if not last_month == month:
+                last_month = month
+                if any([
+                    len(month_links) <= 12,
+                    len(month_links) == 12+i,
+                    n < 5,
+                ]):
+                    pass
+                else:
+                    i += 1
+                n += 1
 
     # Save
     pdf.output(save_path)
