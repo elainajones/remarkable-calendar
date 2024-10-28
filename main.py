@@ -435,7 +435,7 @@ def main(
             # value EVEN THOUGH I SET IT TO BE 14. Somehow setting it to
             # a different value makes the following change back to 14
             # actually persist.
-            pdf.set_font_size(12)
+            pdf.set_font_size(14)
 
             # Embrace the recursion (I know)
             for d in range(len(display_range)):
@@ -443,7 +443,7 @@ def main(
                 text = date.strftime('%B')
                 text = text[:3]
 
-                pdf.set_font_size(14)
+                pdf.set_font_size(12)
                 width = pdf.get_string_width(text)
 
                 x, y = toolbar_links
@@ -456,13 +456,13 @@ def main(
                 if toolbar > 0:
                     # Right handed
                     pdf.set_xy(
-                        x - width - 2.25,
+                        x - width - 1.5,
                         y + ((5.5 * 2) * (d + 1)) + fix_font_y_pos[14]
                     )
                 else:
                     # Left handed
                     pdf.set_xy(
-                        x + 2.25,
+                        x + 1.5,
                         y + ((5.5 * 2) * (d + 1)) + fix_font_y_pos[14]
                     )
 
@@ -521,13 +521,13 @@ def main(
                 if toolbar > 0:
                     # Right handed
                     pdf.set_xy(
-                        x - width - 2.25,
+                        x - width - 1.5,
                         y + ((5.5 * 2) * (d + 1)) + fix_font_y_pos[14]
                     )
                 else:
                     # Left handed
                     pdf.set_xy(
-                        x + 2.25,
+                        x + 1.5,
                         y + ((5.5 * 2) * (d + 1)) + fix_font_y_pos[14]
                     )
 
