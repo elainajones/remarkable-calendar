@@ -503,9 +503,9 @@ def main(
             display_range = month_links[i: 12+i]
 
             for d in range(len(display_range)):
-                date, _ = display_range[d]
+                date, link = display_range[d]
                 # Get link for first of the month.
-                link = date_links[date.strftime('%Y-%m-01')]['01']
+                # link = date_links[date.strftime('%Y-%m-01')]['01']
                 text = date.strftime('%B')
                 text = text[:3]
                 width = pdf.get_string_width(text)
@@ -515,7 +515,6 @@ def main(
                     year_month == date.strftime('%Y-%m'),
                 ]):
                     pdf.set_text_color(color_text)
-                    link = None
                 else:
                     pdf.set_text_color(color_text_light)
 
