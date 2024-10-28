@@ -17,10 +17,10 @@ def main(
     if not handedness:
         toolbar = 0
     elif handedness.lower() == 'left':
-        toolbar = -6
+        toolbar = -5
         toolbar_links = (210 - 12, 15.624 - 5.5/2)
     elif handedness.lower() == 'right':
-        toolbar = 6
+        toolbar = 5
         toolbar_links = (12, 15.624 - 5.5/2)
 
     # Text color (90% gray)
@@ -436,7 +436,7 @@ def main(
             # value EVEN THOUGH I SET IT TO BE 14. Somehow setting it to
             # a different value makes the following change back to 14
             # actually persist.
-            pdf.set_font_size(14)
+            pdf.set_font_size(12)
 
             # Embrace the recursion (I know)
             for d in range(len(display_range)):
@@ -444,7 +444,7 @@ def main(
                 text = date.strftime('%B')
                 text = text[:3]
 
-                pdf.set_font_size(12)
+                pdf.set_font_size(14)
                 width = pdf.get_string_width(text)
 
                 x, y = toolbar_links
