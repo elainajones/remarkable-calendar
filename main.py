@@ -11,6 +11,7 @@ def main(
     date_end: str,
     hour_interval: int,
     save_path: str,
+    week_start: str = 'monday',
     handedness=None,
     margin_links=False
 ) -> None:
@@ -319,8 +320,11 @@ def main(
         'thursday',
         'friday',
         'saturday',
-        'sunday'
+        'sunday',
     ]
+    week_start = week_start.lower()
+    # Reorder based on preferred start of the week.
+    week = [*week[week.index(week_start):], *week[:week.index(week_start)]]
 
     x, y = grid_start
     # page width is 210mm (A4) and grid extends to 149.125mm
@@ -577,6 +581,19 @@ if __name__ == '__main__':
         choices=['left', 'right']
     )
     parser.add_argument(
+        '--week-start',
+        default='monday',
+        choices=[
+            'monday',
+            'tuesday',
+            'wednesday',
+            'thursday',
+            'friday',
+            'saturday',
+            'sunday',
+        ]
+    )
+    parser.add_argument(
         '--enable-toolbar-links',
         help='Only takes effect when combined with --toolbar-space',
         action='store_true',
@@ -588,6 +605,7 @@ if __name__ == '__main__':
     start_date = dateparser.parse(args.start_date)
     end_date = dateparser.parse(args.end_date)
     hour_interval = args.hour_interval
+    week_start = args.week_start
     handedness = args.toolbar_space
     margin_links = args.enable_toolbar_links
     save_path = args.out
@@ -597,6 +615,7 @@ if __name__ == '__main__':
         end_date,
         hour_interval,
         save_path,
+        week_start,
         handedness,
-        margin_links
+        margin_links,
     )
