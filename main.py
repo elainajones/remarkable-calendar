@@ -11,6 +11,7 @@ def main(
     date_end: str,
     hour_interval: int,
     save_path: str,
+    week_start: str = 'monday',
     handedness=None,
     margin_links=False
 ) -> None:
@@ -71,6 +72,18 @@ def main(
         12: +0.3,
     }
 
+    week = [
+        'monday',
+        'tuesday',
+        'wednesday',
+        'thursday',
+        'friday',
+        'saturday',
+        'sunday',
+    ]
+    week_start = week_start.lower()
+    # Reorder based on preferred start of the week.
+    week = [*week[week.index(week_start):], *week[:week.index(week_start)]]
     date_days = (date_end - date_start).days
     script_path = os.path.realpath(__file__)
 
@@ -158,9 +171,15 @@ def main(
             x, y = grid_start
             pdf.set_xy(x + ((210 - 2 * x) / 7) * 5 + toolbar, y)
             pdf.set_fill_color(color_weekend_bg)
+
             pdf.rect(
-                x + ((210 - 2 * x) / 7) * 5 + toolbar, y,
-                ((210 - 2 * x) / 7) * 2, 149.12500 - y,
+                x+((210-2*x)/7)*week.index('saturday')+toolbar, y,
+                ((210-2*x)/7)*1, 149.12500-y,
+                style='F'
+            )
+            pdf.rect(
+                x+((210-2*x)/7)*week.index('sunday')+toolbar, y,
+                ((210-2*x)/7)*1, 149.12500-y,
                 style='F'
             )
 
@@ -311,16 +330,6 @@ def main(
                 y + (5.5 * n) + fix_font_y_pos[14]
             )
             pdf.cell(width, text=text, align='C', fill=True, border=1)
-
-    week = [
-        'monday',
-        'tuesday',
-        'wednesday',
-        'thursday',
-        'friday',
-        'saturday',
-        'sunday'
-    ]
 
     x, y = grid_start
     # page width is 210mm (A4) and grid extends to 149.125mm
@@ -577,6 +586,19 @@ if __name__ == '__main__':
         choices=['left', 'right']
     )
     parser.add_argument(
+        '--week-start',
+        default='monday',
+        choices=[
+            'monday',
+            'tuesday',
+            'wednesday',
+            'thursday',
+            'friday',
+            'saturday',
+            'sunday',
+        ]
+    )
+    parser.add_argument(
         '--enable-toolbar-links',
         help='Only takes effect when combined with --toolbar-space',
         action='store_true',
@@ -588,6 +610,7 @@ if __name__ == '__main__':
     start_date = dateparser.parse(args.start_date)
     end_date = dateparser.parse(args.end_date)
     hour_interval = args.hour_interval
+    week_start = args.week_start
     handedness = args.toolbar_space
     margin_links = args.enable_toolbar_links
     save_path = args.out
@@ -597,6 +620,7 @@ if __name__ == '__main__':
         end_date,
         hour_interval,
         save_path,
+        week_start,
         handedness,
-        margin_links
+        margin_links,
     )
