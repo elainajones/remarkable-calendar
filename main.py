@@ -38,6 +38,8 @@ def main(
 
     # x, y for top right corner of grid
     grid_start = (8.002, 22.62500)
+    # x, y for margin links (bottom)
+    margin_links = (grid_start[0]+toolbar, grid_start[1]+5.5*23+2)
 
     # x, y for separator line in header
     daily_header_sep = (toolbar + 30.00166, 6.80812)
@@ -587,12 +589,9 @@ def main(
                 date, link = display_range[d]
                 text = date.strftime('%B')
                 text = text[:3]
-
                 width = pdf.get_string_width(text)
 
-                month_links_bottom = (grid_start[0]+toolbar, grid_start[1]+5.5*23+2)
-                x, y = month_links_bottom
-
+                x, y = margin_links
                 if month_links[p][0].strftime('%F') == date.strftime('%F'):
                     pdf.set_text_color(color_text)
                     link = None
@@ -617,72 +616,78 @@ def main(
             else:
                 i += 1
 
-        #i = 0
-        #n = 0
-        #page = pdf.page
-        #last_month = None
-        #pdf.set_font_size(14)
-        #for p in range(0, date_days, 2):
-        #    date = date_start + timedelta(days=p)
+        i = 0
+        n = 0
+        page = pdf.page
+        last_month = None
+        pdf.set_font_size(14)
+        for p in range(0, date_days, 2):
+            date = date_start + timedelta(days=p)
 
-        #    if p == 0:
-        #        date = date + timedelta(days=1)
-        #        page += 1
-        #    elif p % 2 == 0:
-        #        date = date + timedelta(days=1)
-        #        page += 1
-        #    else:
-        #        continue
+            if p == 0:
+                date = date + timedelta(days=1)
+                page += 1
+            elif p % 2 == 0:
+                date = date + timedelta(days=1)
+                page += 1
+            else:
+                continue
 
-        #    pdf.page = page
+            pdf.page = page
 
-        #    month = date.strftime('%B')
-        #    year_month = date.strftime('%Y-%m')
+            month = date.strftime('%B')
+            year_month = date.strftime('%Y-%m')
 
-        #    display_range = month_links[i: 12+i]
+            display_range = month_links[i: 12+i]
 
-        #    for d in range(len(display_range)):
-        #        date, link = display_range[d]
-        #        # Get link for first of the month.
-        #        # link = date_links[date.strftime('%Y-%m-01')]['01']
-        #        text = date.strftime('%B')
-        #        text = text[:3]
-        #        width = pdf.get_string_width(text)
+            display_width = 0
+            for d in display_range:
+                date, _ = d
+                text = date.strftime('%B')
+                text = text[:3]
 
-        #        x, y = toolbar_links
-        #        if all([
-        #            year_month == date.strftime('%Y-%m'),
-        #        ]):
-        #            pdf.set_text_color(color_text)
-        #        else:
-        #            pdf.set_text_color(color_text_light)
+                width = pdf.get_string_width(text)
+                display_width += width
 
-        #        if toolbar > 0:
-        #            # Right handed
-        #            pdf.set_xy(
-        #                x - width - 1.5,
-        #                y + ((5.5 * 2) * (d + 1)) + fix_font_y_pos[14]
-        #            )
-        #        else:
-        #            # Left handed
-        #            pdf.set_xy(
-        #                x + 1.5,
-        #                y + ((5.5 * 2) * (d + 1)) + fix_font_y_pos[14]
-        #            )
+            width_space = ((210-2*grid_start[0])-display_width)/11
+            pos = 0
 
-        #        pdf.cell(width, text=text, align='C', link=link)
+            for d in range(len(display_range)):
+                date, link = display_range[d]
+                # Get link for first of the month.
+                # link = date_links[date.strftime('%Y-%m-01')]['01']
+                text = date.strftime('%B')
+                text = text[:3]
+                width = pdf.get_string_width(text)
 
-        #    if not last_month == month:
-        #        last_month = month
-        #        if any([
-        #            len(month_links) <= 12,
-        #            len(month_links) == 12+i,
-        #            n < 5,
-        #        ]):
-        #            pass
-        #        else:
-        #            i += 1
-        #        n += 1
+                x, y = margin_links
+                if all([
+                    year_month == date.strftime('%Y-%m'),
+                ]):
+                    pdf.set_text_color(color_text)
+                else:
+                    pdf.set_text_color(color_text_light)
+
+                pdf.set_xy(
+                    x + pos,
+                    y + fix_font_y_pos[14]
+                )
+
+                pdf.cell(width, text=text, align='C', link=link)
+
+                pos += width + width_space
+
+            if not last_month == month:
+                last_month = month
+                if any([
+                    len(month_links) <= 12,
+                    len(month_links) == 12+i,
+                    n < 5,
+                ]):
+                    pass
+                else:
+                    i += 1
+                n += 1
     # Save
     pdf.output(save_path)
 
