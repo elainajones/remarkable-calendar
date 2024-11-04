@@ -13,7 +13,8 @@ def main(
     save_path: str,
     week_start: str = 'monday',
     handedness=None,
-    margin_links=False
+    enable_toolbar_links=False,
+    enable_margin_links=False
 ) -> None:
     if not handedness:
         toolbar = 0
@@ -37,6 +38,8 @@ def main(
 
     # x, y for top right corner of grid
     grid_start = (8.002, 22.62500)
+    # x, y for margin links (bottom)
+    margin_links = (grid_start[0]+toolbar, grid_start[1]+5.5*23+2)
 
     # x, y for separator line in header
     daily_header_sep = (toolbar + 30.00166, 6.80812)
@@ -433,7 +436,7 @@ def main(
 
         a += 1
 
-    if margin_links and toolbar:
+    if enable_toolbar_links and toolbar:
         i = 0
         # Embrace the recursion (I know. It's bad)
         for p in range(len(month_links)):
@@ -554,6 +557,137 @@ def main(
                     i += 1
                 n += 1
 
+    if enable_margin_links:
+        i = 0
+        # Embrace the recursion (I know. It's bad)
+        for p in range(len(month_links)):
+            pdf.page = p + 1
+            # Limit range of months to 12 since this is the
+            # most we can fit in the side bar.
+            display_range = month_links[i: 12+i]
+            # VERY dumb bug where the font size changes to the wrong
+            # value EVEN THOUGH I SET IT TO BE 14. Somehow setting it to
+            # a different value makes the following change back to 14
+            # actually persist.
+            pdf.set_font_size(12)
+
+            # Embrace the recursion (I know)
+            display_width = 0
+            pdf.set_font_size(14)
+            for d in display_range:
+                date, _ = d
+                text = date.strftime('%B')
+                text = text[:3]
+
+                width = pdf.get_string_width(text)
+                display_width += width
+
+            width_space = ((210-2*grid_start[0])-display_width)/11
+            pos = 0
+
+            for d in range(len(display_range)):
+                date, link = display_range[d]
+                text = date.strftime('%B')
+                text = text[:3]
+                width = pdf.get_string_width(text)
+
+                x, y = margin_links
+                if month_links[p][0].strftime('%F') == date.strftime('%F'):
+                    pdf.set_text_color(color_text)
+                    link = None
+                else:
+                    pdf.set_text_color(color_text_light)
+
+                pdf.set_xy(
+                    x + pos,
+                    y + fix_font_y_pos[14]
+                )
+
+                pdf.cell(width, text=text, align='C', link=link)
+
+                pos += width + width_space
+
+            if any([
+                len(month_links) <= 12,
+                len(month_links) == 12+i,
+                p < 5,
+            ]):
+                pass
+            else:
+                i += 1
+
+        i = 0
+        n = 0
+        page = pdf.page
+        last_month = None
+        pdf.set_font_size(14)
+        for p in range(0, date_days, 2):
+            date = date_start + timedelta(days=p)
+
+            if p == 0:
+                date = date + timedelta(days=1)
+                page += 1
+            elif p % 2 == 0:
+                date = date + timedelta(days=1)
+                page += 1
+            else:
+                continue
+
+            pdf.page = page
+
+            month = date.strftime('%B')
+            year_month = date.strftime('%Y-%m')
+
+            display_range = month_links[i: 12+i]
+
+            display_width = 0
+            for d in display_range:
+                date, _ = d
+                text = date.strftime('%B')
+                text = text[:3]
+
+                width = pdf.get_string_width(text)
+                display_width += width
+
+            width_space = ((210-2*grid_start[0])-display_width)/11
+            pos = 0
+
+            for d in range(len(display_range)):
+                date, link = display_range[d]
+                # Get link for first of the month.
+                # link = date_links[date.strftime('%Y-%m-01')]['01']
+                text = date.strftime('%B')
+                text = text[:3]
+                width = pdf.get_string_width(text)
+
+                x, y = margin_links
+                if all([
+                    year_month == date.strftime('%Y-%m'),
+                ]):
+                    pdf.set_text_color(color_text)
+                else:
+                    pdf.set_text_color(color_text_light)
+
+                pdf.set_xy(
+                    x + pos,
+                    y + fix_font_y_pos[14]
+                )
+
+                pdf.cell(width, text=text, align='C', link=link)
+
+                pos += width + width_space
+
+            if not last_month == month:
+                last_month = month
+                if any([
+                    len(month_links) <= 12,
+                    len(month_links) == 12+i,
+                    n < 5,
+                ]):
+                    pass
+                else:
+                    i += 1
+                n += 1
     # Save
     pdf.output(save_path)
 
@@ -603,6 +737,11 @@ if __name__ == '__main__':
         help='Only takes effect when combined with --toolbar-space',
         action='store_true',
     )
+    parser.add_argument(
+        '--enable-margin-links',
+        help='Add month links in bottom page margin',
+        action='store_true',
+    )
     parser.add_argument('--out', default=save_path)
 
     args = parser.parse_args()
@@ -612,15 +751,17 @@ if __name__ == '__main__':
     hour_interval = args.hour_interval
     week_start = args.week_start
     handedness = args.toolbar_space
-    margin_links = args.enable_toolbar_links
+    toolbar_links = args.enable_toolbar_links
+    margin_links = args.enable_margin_links
     save_path = args.out
 
     main(
-        start_date,
-        end_date,
-        hour_interval,
-        save_path,
-        week_start,
-        handedness,
-        margin_links,
+        date_start=start_date,
+        date_end=end_date,
+        hour_interval=hour_interval,
+        save_path=save_path,
+        week_start=week_start,
+        handedness=handedness,
+        enable_toolbar_links=toolbar_links,
+        enable_margin_links=margin_links,
     )
