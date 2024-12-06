@@ -368,27 +368,6 @@ def main(
 
         # Set proper start of the month.
         if not last_month == month:
-            # Don't append dates before the date range to avoid key
-            # errors.
-            if page > 0:
-                for n in range(35 - (a + b * 7)):
-                    # Don't ask. I forgot.
-                    pdf.set_xy(
-                        x + (a * x_off) + (n * x_off),
-                        y + fix_font_y_pos[14] + (b * y_off)
-                    )
-                    # Use lighter ruling color when filling in leftover
-                    # spaces with preview of next month dates.
-                    pdf.set_text_color(color_text_light)
-
-                    # Temporary date var
-                    d = date_start + timedelta(days=i+n)
-                    t = d.strftime('%d')
-                    link = date_links[d.strftime('%F')][t]
-
-                    width = pdf.get_string_width(t)
-                    pdf.cell(width, text=t, align='C', link=link)
-
             # New month, start from top
             last_month = month
             page += 1
@@ -422,10 +401,10 @@ def main(
 
                     # Temporary date var
                     d = (date_start + timedelta(days=i))
-                    event = d.strftime('%m-%d')
 
                     # Temporary text var
                     t = (d - timedelta(days=n)).strftime('%d')
+                    event = (d - timedelta(days=n)).strftime('%m-%d')
 
                     # Temporary date var (formatted)
                     d = (d - timedelta(days=n)).strftime('%F')
@@ -445,12 +424,13 @@ def main(
                     # a different value makes the following change back
                     # actually persist.
                     pdf.set_fill_color(color_page_bg)
+                    pdf.set_draw_color(color_page_bg)
                     for event in event_list:
                         pdf.set_fill_color(color_event_bg)
                         pdf.set_draw_color(color_event_bg)
                         pdf.set_xy(
-                            ex + (a * x_off),
-                            ey + (b * y_off) + fix_font_y_pos[10]
+                            ex + (a - n) * x_off,
+                            ey + fix_font_y_pos[10]
                         )
 
                         t = event[0]
@@ -480,9 +460,6 @@ def main(
             a = 0
             b += 1
         if b <= 4:
-            # No more rows, skip to next month.
-            # This will still be visible in the next month even if they
-            # don't all fit on one page.
             pdf.set_text_color(color_text)
 
             text = date.strftime('%d')
@@ -504,6 +481,7 @@ def main(
             # a different value makes the following change back
             # actually persist.
             pdf.set_fill_color(color_page_bg)
+            pdf.set_draw_color(color_page_bg)
             for event in event_list:
                 pdf.set_draw_color(color_event_bg)
                 pdf.set_fill_color(color_event_bg)
@@ -538,6 +516,73 @@ def main(
         d = (date_start + timedelta(days=i+1))
         m = d.strftime('%m')
         if b > 4 or not m == month:
+            # No more rows or next day is a new month, skip to next month.
+            # This will still be visible in the next month even if they
+            # don't all fit on one page.
+
+            # Don't append dates before the date range to avoid key
+            # errors.
+            if page > 0:
+                for n in range(35 - (a + b * 7)):
+                    # Don't ask. I forgot.
+                    pdf.set_xy(
+                        x + (a * x_off) + (n * x_off),
+                        y + fix_font_y_pos[14] + (b * y_off)
+                    )
+                    # Use lighter ruling color when filling in leftover
+                    # spaces with preview of next month dates.
+                    pdf.set_text_color(color_text_light)
+                    pdf.set_font_size(14)
+
+                    # Temporary date var
+                    d = date_start + timedelta(days=i+n+1)
+                    t = d.strftime('%d')
+                    link = date_links.get(d.strftime('%F'), {})
+                    link = link.get(t, None)
+
+                    width = pdf.get_string_width(t)
+                    pdf.cell(width, text=t, align='C', link=link)
+
+                    pdf.set_font_size(10)
+                    # VERY dumb bug where the font color to the wrong
+                    # value EVEN THOUGH I SET IT. Somehow setting it to
+                    # a different value makes the following change back
+                    # actually persist.
+                    pdf.set_fill_color(color_page_bg)
+                    pdf.set_draw_color(color_page_bg)
+                    event = d.strftime('%m-%d')
+                    event_list = important_dates.get(event, [])
+                    ex, ey = monthly_day_event
+                    for event in event_list:
+                        pdf.set_fill_color(color_event_bg)
+                        pdf.set_draw_color(color_event_bg)
+                        pdf.set_xy(
+                            ex + (a * x_off) + (n * x_off),
+                            ey + fix_font_y_pos[10] + (b * y_off)
+                        )
+
+                        t = event[0]
+                        width = (210 - 2 * grid_start[0]) / 7
+                        if int(event[-1]) and t:
+                            pdf.cell(
+                                width,
+                                text=t,
+                                align='C',
+                                fill=True,
+                                border=1,
+                            )
+                        elif not int(event[-1]) and t:
+                            pdf.cell(
+                                width,
+                                text=' ',
+                                align='C',
+                                fill=True,
+                                border=1,
+                            )
+                        ey += 4.5
+
+                pdf.set_font_size(14)
+
             # Horizontal grid lines
             pdf.set_draw_color(color_text)
             pdf.set_line_width(0.5)
