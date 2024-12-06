@@ -90,3 +90,29 @@ This includes the following options to customize the date range.
     - eg: `'2024/09/27'` or `'Sept 9, 2024'` (make sure to enclose inside `'`)
 
 Advanced users familiar with Python can customize the font by providing their own font files.
+
+### Adding Important Dates
+
+Important dates can be added to the calendar by editing the 'dates.csv' file or
+supplying a custom path using the `--date-file` argument.
+
+This file expects to have the following 4 columns.
+
+```csv
+mm-dd,short description,long description,1 or 0 for short text visibility
+```
+
+Using `0` for the visibility only effects the label visibility in the month
+view and can be modified at the user's discretion. Regardless of this value,
+the long description will be added for the day view with the short description
+being used if no value is supplied for the long description.
+
+Multiple events can be added to the same day and will be added under any
+previous event in the order added. To add an empty space for alignment,
+an empty description can be added as shown below.
+
+```csv
+mm-dd,,,1
+```
+
+You may also refer to the default values in `dates.csv` as an additional example.

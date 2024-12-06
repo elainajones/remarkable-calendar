@@ -1,4 +1,5 @@
 import os
+import csv
 import argparse
 from datetime import datetime, timedelta
 
@@ -13,8 +14,8 @@ def main(
     save_path: str,
     week_start: str = 'monday',
     handedness=None,
-    enable_toolbar_links=False,
-    enable_margin_links=False
+    margin_links=False,
+    date_file=None,
 ) -> None:
     if not handedness:
         toolbar = 0
@@ -28,18 +29,21 @@ def main(
     # Text color (90% gray)
     color_text = (26, 26, 26)
     # Text color (50% gray)
-    color_text_light = (153, 153, 153)
+    color_text_light = (
+        color_text[0] + 127,
+        color_text[1] + 127,
+        color_text[2] + 127,
+    )
     # Bg color for weekend shading (10% gray)
     color_weekend_bg = (230, 230, 230)
     # Lighter color for grid ruling lines (30% gray)
     color_ruling = (179, 179, 179)
     # Page background (white)
     color_page_bg = (255, 255, 255)
+    color_event_bg = (205, 205, 205)
 
     # x, y for top right corner of grid
     grid_start = (8.002, 22.62500)
-    # x, y for margin links (bottom)
-    margin_links = (grid_start[0]+toolbar, grid_start[1]+5.5*23+2)
 
     # x, y for separator line in header
     daily_header_sep = (toolbar + 30.00166, 6.80812)
@@ -51,6 +55,11 @@ def main(
     daily_month_name = (daily_header_sep[0] + 3, 14.34300)
     # x, y for daily hour rulings (e.g. 01-23)
     daily_hour_num = (toolbar + 13.50161, 15.624)
+    # x, y for event description.
+    daily_day_event = (
+        toolbar + grid_start[0] + (5.5 * 3.5),
+        toolbar + grid_start[1] + 5.5 - 1.8
+    )
 
     # x, y for separator line in header
     monthly_header_sep = (toolbar + 35.7142, 6.80812)
@@ -62,6 +71,7 @@ def main(
     monthly_year = (monthly_header_sep[0] - 3, 14.34300)
     # x, y for monthly day number (e.g. 31)
     monthly_day_num = (toolbar + grid_start[0] + 3, grid_start[1] + 3)
+    monthly_day_event = (toolbar + grid_start[0], grid_start[1] + 8)
 
     # Dumb fix for text y position not matching my Inkscape draft
     # exactly. Need to correct the render position by a fixed value from
@@ -72,7 +82,9 @@ def main(
         22: -1.2,
         16: -1,
         14: -1,
+        10: +.32,
         12: +0.3,
+        8: +.25,
     }
 
     week = [
@@ -90,6 +102,15 @@ def main(
     date_days = (date_end - date_start).days
     script_path = os.path.realpath(__file__)
 
+    important_dates = {}
+    if os.path.exists(date_file):
+        with open(date_file, 'r') as f:
+            reader = csv.reader(f, delimiter=',')
+            for row in reader:
+                if row[0] not in important_dates.keys():
+                    important_dates[row[0]] = [row[1:]]
+                else:
+                    important_dates[row[0]].append(row[1:])
     # Font
     font_file = os.path.join(
         os.path.dirname(script_path),
@@ -185,29 +206,6 @@ def main(
                 ((210-2*x)/7)*1, 149.12500-y,
                 style='F'
             )
-
-            # Horizontal grid lines
-            pdf.set_draw_color(color_text)
-            pdf.set_line_width(0.5)
-
-            x, y = grid_start
-            for n in range(6):
-                # page width is 210mm (A4) and grid extends to 149.125mm
-                pdf.line(
-                    x + toolbar,
-                    y + ((149.12500 - y) / 5) * n,
-                    210 - x + toolbar,
-                    y + ((149.12500 - y) / 5) * n,
-                )
-            # Vertical grid lines
-            for n in range(8):
-                # page width is 210mm (A4) and grid extends to 149.125mm
-                pdf.line(
-                    x + ((210 - 2 * x) / 7) * n + toolbar,
-                    y,
-                    x + ((210 - 2 * x) / 7) * n + toolbar,
-                    149.12500,
-                )
 
             month_links.append((date, link_id))
 
@@ -334,6 +332,25 @@ def main(
             )
             pdf.cell(width, text=text, align='C', fill=True, border=1)
 
+        # Add event description.
+        event = date.strftime('%m-%d')
+        event_list = important_dates.get(event, [])
+        x, y = daily_day_event
+        # pdf.set_font_size(12)
+
+        for event in event_list:
+            text = event[1] or event[0]
+            width = pdf.get_string_width(text)
+
+            pdf.set_xy(
+                x + x_off,
+                y + fix_font_y_pos[14]
+            )
+
+            if text:
+                pdf.cell(width, text=text, align='C', fill=True, border=0.5)
+                y += 5.5
+
     x, y = grid_start
     # page width is 210mm (A4) and grid extends to 149.125mm
     x_off = (210 - 2 * x) / 7
@@ -372,6 +389,30 @@ def main(
                     width = pdf.get_string_width(t)
                     pdf.cell(width, text=t, align='C', link=link)
 
+            # Horizontal grid lines
+            pdf.set_draw_color(color_text)
+            pdf.set_line_width(0.5)
+
+            x, y = grid_start
+            for n in range(6):
+                # page width is 210mm (A4) and grid extends to 149.125mm
+                pdf.line(
+                    x + toolbar,
+                    y + ((149.12500 - y) / 5) * n,
+                    210 - x + toolbar,
+                    y + ((149.12500 - y) / 5) * n,
+                )
+            # Vertical grid lines
+            for n in range(8):
+                # page width is 210mm (A4) and grid extends to 149.125mm
+                pdf.line(
+                    x + ((210 - 2 * x) / 7) * n + toolbar,
+                    y,
+                    x + ((210 - 2 * x) / 7) * n + toolbar,
+                    149.12500,
+                )
+            x, y = monthly_day_num
+
             # New month, start from top
             last_month = month
             page += 1
@@ -405,6 +446,8 @@ def main(
 
                     # Temporary date var
                     d = (date_start + timedelta(days=i))
+                    event = d.strftime('%m-%d')
+
                     # Temporary text var
                     t = (d - timedelta(days=n)).strftime('%d')
 
@@ -414,6 +457,47 @@ def main(
 
                     width = pdf.get_string_width(t)
                     pdf.cell(width, text=t, align='C', link=link)
+
+                    # Add event banner
+                    event_list = important_dates.get(event, [])
+                    ex, ey = monthly_day_event
+
+                    pdf.set_font_size(10)
+
+                    # VERY dumb bug where the font size changes to the wrong
+                    # value EVEN THOUGH I SET IT. Somehow setting it to
+                    # a different value makes the following change back
+                    # actually persist.
+                    pdf.set_fill_color(color_page_bg)
+                    for event in event_list:
+                        pdf.set_fill_color(color_event_bg)
+                        pdf.set_draw_color(color_event_bg)
+                        pdf.set_xy(
+                            ex + (a * x_off),
+                            ey + (b * y_off) + fix_font_y_pos[10]
+                        )
+
+                        t = event[0]
+                        width = (210 - 2 * grid_start[0]) / 7
+                        if int(event[-1]) and t:
+                            pdf.cell(
+                                width,
+                                text=t,
+                                align='C',
+                                fill=True,
+                                border=1,
+                            )
+                        elif not int(event[-1]) and t:
+                            pdf.cell(
+                                width,
+                                text=' ',
+                                align='C',
+                                fill=True,
+                                border=1,
+                            )
+                        ey += 4.5
+
+                    pdf.set_font_size(14)
 
         if a > 0 and a % 7 == 0:
             # End of week, start new line.
@@ -434,9 +518,51 @@ def main(
         pdf.set_xy(x + (a * x_off), y + (b * y_off) + fix_font_y_pos[14])
         pdf.cell(width, text=text, align='C', link=link)
 
+        # Add event banner
+        event = date.strftime('%m-%d')
+        event_list = important_dates.get(event, [])
+        ex, ey = monthly_day_event
+
+        pdf.set_font_size(10)
+
+        # VERY dumb bug where the font size changes to the wrong
+        # value EVEN THOUGH I SET IT. Somehow setting it to
+        # a different value makes the following change back
+        # actually persist.
+        pdf.set_fill_color(color_page_bg)
+        for event in event_list:
+            pdf.set_draw_color(color_event_bg)
+            pdf.set_fill_color(color_event_bg)
+            pdf.set_xy(
+                ex + (a * x_off),
+                ey + (b * y_off) + fix_font_y_pos[10]
+            )
+
+            t = event[0]
+            width = (210 - 2 * grid_start[0]) / 7
+            if int(event[-1]) and t:
+                pdf.cell(
+                    width,
+                    text=t,
+                    align='C',
+                    fill=True,
+                    border=1,
+                )
+            elif not int(event[-1]) and t:
+                pdf.cell(
+                    width,
+                    text=' ',
+                    align='C',
+                    fill=True,
+                    border=1,
+                )
+            ey += 4.5
+
+        pdf.set_font_size(14)
+
         a += 1
 
-    if enable_toolbar_links and toolbar:
+    if margin_links and toolbar:
         i = 0
         # Embrace the recursion (I know. It's bad)
         for p in range(len(month_links)):
@@ -557,137 +683,6 @@ def main(
                     i += 1
                 n += 1
 
-    if enable_margin_links:
-        i = 0
-        # Embrace the recursion (I know. It's bad)
-        for p in range(len(month_links)):
-            pdf.page = p + 1
-            # Limit range of months to 12 since this is the
-            # most we can fit in the side bar.
-            display_range = month_links[i: 12+i]
-            # VERY dumb bug where the font size changes to the wrong
-            # value EVEN THOUGH I SET IT TO BE 14. Somehow setting it to
-            # a different value makes the following change back to 14
-            # actually persist.
-            pdf.set_font_size(12)
-
-            # Embrace the recursion (I know)
-            display_width = 0
-            pdf.set_font_size(14)
-            for d in display_range:
-                date, _ = d
-                text = date.strftime('%B')
-                text = text[:3]
-
-                width = pdf.get_string_width(text)
-                display_width += width
-
-            width_space = ((210-2*grid_start[0])-display_width)/11
-            pos = 0
-
-            for d in range(len(display_range)):
-                date, link = display_range[d]
-                text = date.strftime('%B')
-                text = text[:3]
-                width = pdf.get_string_width(text)
-
-                x, y = margin_links
-                if month_links[p][0].strftime('%F') == date.strftime('%F'):
-                    pdf.set_text_color(color_text)
-                    link = None
-                else:
-                    pdf.set_text_color(color_text_light)
-
-                pdf.set_xy(
-                    x + pos,
-                    y + fix_font_y_pos[14]
-                )
-
-                pdf.cell(width, text=text, align='C', link=link)
-
-                pos += width + width_space
-
-            if any([
-                len(month_links) <= 12,
-                len(month_links) == 12+i,
-                p < 5,
-            ]):
-                pass
-            else:
-                i += 1
-
-        i = 0
-        n = 0
-        page = pdf.page
-        last_month = None
-        pdf.set_font_size(14)
-        for p in range(0, date_days, 2):
-            date = date_start + timedelta(days=p)
-
-            if p == 0:
-                date = date + timedelta(days=1)
-                page += 1
-            elif p % 2 == 0:
-                date = date + timedelta(days=1)
-                page += 1
-            else:
-                continue
-
-            pdf.page = page
-
-            month = date.strftime('%B')
-            year_month = date.strftime('%Y-%m')
-
-            display_range = month_links[i: 12+i]
-
-            display_width = 0
-            for d in display_range:
-                date, _ = d
-                text = date.strftime('%B')
-                text = text[:3]
-
-                width = pdf.get_string_width(text)
-                display_width += width
-
-            width_space = ((210-2*grid_start[0])-display_width)/11
-            pos = 0
-
-            for d in range(len(display_range)):
-                date, link = display_range[d]
-                # Get link for first of the month.
-                # link = date_links[date.strftime('%Y-%m-01')]['01']
-                text = date.strftime('%B')
-                text = text[:3]
-                width = pdf.get_string_width(text)
-
-                x, y = margin_links
-                if all([
-                    year_month == date.strftime('%Y-%m'),
-                ]):
-                    pdf.set_text_color(color_text)
-                else:
-                    pdf.set_text_color(color_text_light)
-
-                pdf.set_xy(
-                    x + pos,
-                    y + fix_font_y_pos[14]
-                )
-
-                pdf.cell(width, text=text, align='C', link=link)
-
-                pos += width + width_space
-
-            if not last_month == month:
-                last_month = month
-                if any([
-                    len(month_links) <= 12,
-                    len(month_links) == 12+i,
-                    n < 5,
-                ]):
-                    pass
-                else:
-                    i += 1
-                n += 1
     # Save
     pdf.output(save_path)
 
@@ -701,6 +696,10 @@ if __name__ == '__main__':
     save_path = os.path.join(
         os.path.dirname(script_path),
         'calendar.pdf'
+    )
+    date_file = os.path.join(
+        os.path.dirname(script_path),
+        'dates.csv'
     )
 
     parser = argparse.ArgumentParser(
@@ -737,12 +736,8 @@ if __name__ == '__main__':
         help='Only takes effect when combined with --toolbar-space',
         action='store_true',
     )
-    parser.add_argument(
-        '--enable-margin-links',
-        help='Add month links in bottom page margin',
-        action='store_true',
-    )
     parser.add_argument('--out', default=save_path)
+    parser.add_argument('--date-file', default=date_file)
 
     args = parser.parse_args()
     # Convert user input date string to datetime obj
@@ -751,17 +746,17 @@ if __name__ == '__main__':
     hour_interval = args.hour_interval
     week_start = args.week_start
     handedness = args.toolbar_space
-    toolbar_links = args.enable_toolbar_links
-    margin_links = args.enable_margin_links
+    margin_links = args.enable_toolbar_links
+    date_file = args.date_file
     save_path = args.out
 
     main(
-        date_start=start_date,
-        date_end=end_date,
-        hour_interval=hour_interval,
-        save_path=save_path,
-        week_start=week_start,
-        handedness=handedness,
-        enable_toolbar_links=toolbar_links,
-        enable_margin_links=margin_links,
+        start_date,
+        end_date,
+        hour_interval,
+        save_path,
+        week_start,
+        handedness,
+        margin_links,
+        date_file,
     )
