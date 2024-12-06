@@ -1,4 +1,5 @@
 import os
+import csv
 import argparse
 from datetime import datetime, timedelta
 
@@ -13,7 +14,8 @@ def main(
     save_path: str,
     week_start: str = 'monday',
     handedness=None,
-    margin_links=False
+    margin_links=False,
+    date_file=None,
 ) -> None:
     if not handedness:
         toolbar = 0
@@ -59,6 +61,7 @@ def main(
     monthly_year = (monthly_header_sep[0] - 3, 14.34300)
     # x, y for monthly day number (e.g. 31)
     monthly_day_num = (toolbar + grid_start[0] + 3, grid_start[1] + 3)
+    monthly_day_event = (toolbar + grid_start[0], grid_start[1] + 5)
 
     # Dumb fix for text y position not matching my Inkscape draft
     # exactly. Need to correct the render position by a fixed value from
@@ -87,6 +90,15 @@ def main(
     date_days = (date_end - date_start).days
     script_path = os.path.realpath(__file__)
 
+    important_dates = {}
+    if os.path.exists(date_file):
+        with open(date_file, 'r') as f:
+            reader = csv.reader(f, delimiter=',')
+            for row in reader:
+                if row[0] not in important_dates.keys():
+                    important_dates[row[0]] = [row[1:]]
+                else:
+                    important_dates[row[0]].append(row[1:])
     # Font
     font_file = os.path.join(
         os.path.dirname(script_path),
@@ -182,29 +194,6 @@ def main(
                 ((210-2*x)/7)*1, 149.12500-y,
                 style='F'
             )
-
-            # Horizontal grid lines
-            pdf.set_draw_color(color_text)
-            pdf.set_line_width(0.5)
-
-            x, y = grid_start
-            for n in range(6):
-                # page width is 210mm (A4) and grid extends to 149.125mm
-                pdf.line(
-                    x + toolbar,
-                    y + ((149.12500 - y) / 5) * n,
-                    210 - x + toolbar,
-                    y + ((149.12500 - y) / 5) * n,
-                )
-            # Vertical grid lines
-            for n in range(8):
-                # page width is 210mm (A4) and grid extends to 149.125mm
-                pdf.line(
-                    x + ((210 - 2 * x) / 7) * n + toolbar,
-                    y,
-                    x + ((210 - 2 * x) / 7) * n + toolbar,
-                    149.12500,
-                )
 
             month_links.append((date, link_id))
 
@@ -369,6 +358,30 @@ def main(
                     width = pdf.get_string_width(t)
                     pdf.cell(width, text=t, align='C', link=link)
 
+            # Horizontal grid lines
+            pdf.set_draw_color(color_text)
+            pdf.set_line_width(0.5)
+
+            x, y = grid_start
+            for n in range(6):
+                # page width is 210mm (A4) and grid extends to 149.125mm
+                pdf.line(
+                    x + toolbar,
+                    y + ((149.12500 - y) / 5) * n,
+                    210 - x + toolbar,
+                    y + ((149.12500 - y) / 5) * n,
+                )
+            # Vertical grid lines
+            for n in range(8):
+                # page width is 210mm (A4) and grid extends to 149.125mm
+                pdf.line(
+                    x + ((210 - 2 * x) / 7) * n + toolbar,
+                    y,
+                    x + ((210 - 2 * x) / 7) * n + toolbar,
+                    149.12500,
+                )
+            x, y = monthly_day_num
+
             # New month, start from top
             last_month = month
             page += 1
@@ -402,6 +415,8 @@ def main(
 
                     # Temporary date var
                     d = (date_start + timedelta(days=i))
+                    event = d.strftime('%m-%d')
+
                     # Temporary text var
                     t = (d - timedelta(days=n)).strftime('%d')
 
@@ -568,6 +583,10 @@ if __name__ == '__main__':
         os.path.dirname(script_path),
         'calendar.pdf'
     )
+    date_file = os.path.join(
+        os.path.dirname(script_path),
+        'dates.csv'
+    )
 
     parser = argparse.ArgumentParser(
         description='Remarkable 2 calender creator'
@@ -604,6 +623,7 @@ if __name__ == '__main__':
         action='store_true',
     )
     parser.add_argument('--out', default=save_path)
+    parser.add_argument('--date-file', default=date_file)
 
     args = parser.parse_args()
     # Convert user input date string to datetime obj
@@ -613,6 +633,7 @@ if __name__ == '__main__':
     week_start = args.week_start
     handedness = args.toolbar_space
     margin_links = args.enable_toolbar_links
+    date_file = args.date_file
     save_path = args.out
 
     main(
@@ -623,4 +644,5 @@ if __name__ == '__main__':
         week_start,
         handedness,
         margin_links,
+        date_file,
     )
