@@ -55,6 +55,11 @@ def main(
     daily_month_name = (daily_header_sep[0] + 3, 14.34300)
     # x, y for daily hour rulings (e.g. 01-23)
     daily_hour_num = (toolbar + 13.50161, 15.624)
+    # x, y for event description.
+    daily_day_event = (
+        toolbar + grid_start[0] + (5.5 * 3.5),
+        toolbar + grid_start[1] + (5.5 / 2) + 0.25
+    )
 
     # x, y for separator line in header
     monthly_header_sep = (toolbar + 35.7142, 6.80812)
@@ -325,6 +330,25 @@ def main(
                 y + (5.5 * n) + fix_font_y_pos[14]
             )
             pdf.cell(width, text=text, align='C', fill=True, border=1)
+
+        # Add event description.
+        event = date.strftime('%m-%d')
+        event_list = important_dates.get(event, [])
+        x, y = daily_day_event
+        pdf.set_font_size(12)
+
+        for event in event_list:
+            text = event[1] or event[0]
+            width = pdf.get_string_width(text)
+
+            pdf.set_xy(
+                x + x_off,
+                y + fix_font_y_pos[12]
+            )
+
+            if text:
+                pdf.cell(width, text=text, align='C', fill=True, border=1)
+                y += 5.5
 
     x, y = grid_start
     # page width is 210mm (A4) and grid extends to 149.125mm
