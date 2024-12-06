@@ -463,6 +463,11 @@ def main(
 
                     pdf.set_font_size(8)
 
+                    # VERY dumb bug where the font size changes to the wrong
+                    # value EVEN THOUGH I SET IT. Somehow setting it to
+                    # a different value makes the following change back
+                    # actually persist.
+                    pdf.set_fill_color(color_page_bg)
                     for event in event_list:
                         pdf.set_fill_color(color_event_bg)
                         pdf.set_draw_color(color_event_bg)
@@ -519,6 +524,11 @@ def main(
 
         pdf.set_font_size(8)
 
+        # VERY dumb bug where the font size changes to the wrong
+        # value EVEN THOUGH I SET IT. Somehow setting it to
+        # a different value makes the following change back
+        # actually persist.
+        pdf.set_fill_color(color_page_bg)
         for event in event_list:
             pdf.set_draw_color(color_event_bg)
             pdf.set_fill_color(color_event_bg)
