@@ -82,6 +82,7 @@ def main(
         22: -1.2,
         16: -1,
         14: -1,
+        10: +.32,
         12: +0.3,
         8: +.25,
     }
@@ -461,7 +462,7 @@ def main(
                     event_list = important_dates.get(event, [])
                     ex, ey = monthly_day_event
 
-                    pdf.set_font_size(8)
+                    pdf.set_font_size(10)
 
                     # VERY dumb bug where the font size changes to the wrong
                     # value EVEN THOUGH I SET IT. Somehow setting it to
@@ -473,7 +474,7 @@ def main(
                         pdf.set_draw_color(color_event_bg)
                         pdf.set_xy(
                             ex + (a * x_off),
-                            ey + (b * y_off) + fix_font_y_pos[8]
+                            ey + (b * y_off) + fix_font_y_pos[10]
                         )
 
                         t = event[0]
@@ -494,7 +495,7 @@ def main(
                                 fill=True,
                                 border=1,
                             )
-                        ey += 3.75
+                        ey += 4.5
 
                     pdf.set_font_size(14)
 
@@ -522,7 +523,7 @@ def main(
         event_list = important_dates.get(event, [])
         ex, ey = monthly_day_event
 
-        pdf.set_font_size(8)
+        pdf.set_font_size(10)
 
         # VERY dumb bug where the font size changes to the wrong
         # value EVEN THOUGH I SET IT. Somehow setting it to
@@ -534,7 +535,7 @@ def main(
             pdf.set_fill_color(color_event_bg)
             pdf.set_xy(
                 ex + (a * x_off),
-                ey + (b * y_off) + fix_font_y_pos[8]
+                ey + (b * y_off) + fix_font_y_pos[10]
             )
 
             t = event[0]
@@ -555,7 +556,7 @@ def main(
                     fill=True,
                     border=1,
                 )
-            ey += 3.75
+            ey += 4.5
 
         pdf.set_font_size(14)
 
