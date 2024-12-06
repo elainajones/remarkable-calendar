@@ -522,6 +522,11 @@ def main(
 
             # Don't append dates before the date range to avoid key
             # errors.
+            if b == 3:
+                # Dumb bug for Months which have 28 days
+                # which fit perfectly in 3 weeks.
+                a = 0
+                b += 1
             if page > 0:
                 for n in range(35 - (a + b * 7)):
                     # Don't ask. I forgot.
