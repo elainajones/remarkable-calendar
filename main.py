@@ -29,13 +29,18 @@ def main(
     # Text color (90% gray)
     color_text = (26, 26, 26)
     # Text color (50% gray)
-    color_text_light = (153, 153, 153)
+    color_text_light = (
+        color_text[0] + 127,
+        color_text[1] + 127,
+        color_text[2] + 127,
+    )
     # Bg color for weekend shading (10% gray)
     color_weekend_bg = (230, 230, 230)
     # Lighter color for grid ruling lines (30% gray)
     color_ruling = (179, 179, 179)
     # Page background (white)
     color_page_bg = (255, 255, 255)
+    color_event_bg = (205, 205, 205)
 
     # x, y for top right corner of grid
     grid_start = (8.002, 22.62500)
@@ -61,7 +66,7 @@ def main(
     monthly_year = (monthly_header_sep[0] - 3, 14.34300)
     # x, y for monthly day number (e.g. 31)
     monthly_day_num = (toolbar + grid_start[0] + 3, grid_start[1] + 3)
-    monthly_day_event = (toolbar + grid_start[0], grid_start[1] + 5)
+    monthly_day_event = (toolbar + grid_start[0], grid_start[1] + 8)
 
     # Dumb fix for text y position not matching my Inkscape draft
     # exactly. Need to correct the render position by a fixed value from
@@ -73,6 +78,7 @@ def main(
         16: -1,
         14: -1,
         12: +0.3,
+        8: +.25,
     }
 
     week = [
@@ -427,6 +433,42 @@ def main(
                     width = pdf.get_string_width(t)
                     pdf.cell(width, text=t, align='C', link=link)
 
+                    # Add event banner
+                    event_list = important_dates.get(event, [])
+                    ex, ey = monthly_day_event
+
+                    pdf.set_font_size(8)
+
+                    for event in event_list:
+                        pdf.set_fill_color(color_event_bg)
+                        pdf.set_draw_color(color_event_bg)
+                        pdf.set_xy(
+                            ex + (a * x_off),
+                            ey + (b * y_off) + fix_font_y_pos[8]
+                        )
+
+                        t = event[0]
+                        width = (210 - 2 * grid_start[0]) / 7
+                        if int(event[-1]) and t:
+                            pdf.cell(
+                                width,
+                                text=t,
+                                align='C',
+                                fill=True,
+                                border=1,
+                            )
+                        elif not int(event[-1]) and t:
+                            pdf.cell(
+                                width,
+                                text=' ',
+                                align='C',
+                                fill=True,
+                                border=1,
+                            )
+                        ey += 3.75
+
+                    pdf.set_font_size(14)
+
         if a > 0 and a % 7 == 0:
             # End of week, start new line.
             a = 0
@@ -445,6 +487,43 @@ def main(
         width = pdf.get_string_width(text)
         pdf.set_xy(x + (a * x_off), y + (b * y_off) + fix_font_y_pos[14])
         pdf.cell(width, text=text, align='C', link=link)
+
+        # Add event banner
+        event = date.strftime('%m-%d')
+        event_list = important_dates.get(event, [])
+        ex, ey = monthly_day_event
+
+        pdf.set_font_size(8)
+
+        for event in event_list:
+            pdf.set_draw_color(color_event_bg)
+            pdf.set_fill_color(color_event_bg)
+            pdf.set_xy(
+                ex + (a * x_off),
+                ey + (b * y_off) + fix_font_y_pos[8]
+            )
+
+            t = event[0]
+            width = (210 - 2 * grid_start[0]) / 7
+            if int(event[-1]) and t:
+                pdf.cell(
+                    width,
+                    text=t,
+                    align='C',
+                    fill=True,
+                    border=1,
+                )
+            elif not int(event[-1]) and t:
+                pdf.cell(
+                    width,
+                    text=' ',
+                    align='C',
+                    fill=True,
+                    border=1,
+                )
+            ey += 3.75
+
+        pdf.set_font_size(14)
 
         a += 1
 
