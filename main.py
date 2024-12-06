@@ -58,7 +58,7 @@ def main(
     # x, y for event description.
     daily_day_event = (
         toolbar + grid_start[0] + (5.5 * 3.5),
-        toolbar + grid_start[1] + (5.5 / 2) + 0.25
+        toolbar + grid_start[1] + 5.5 - 1.8
     )
 
     # x, y for separator line in header
@@ -336,7 +336,7 @@ def main(
         event = date.strftime('%m-%d')
         event_list = important_dates.get(event, [])
         x, y = daily_day_event
-        pdf.set_font_size(12)
+        # pdf.set_font_size(12)
 
         for event in event_list:
             text = event[1] or event[0]
@@ -344,11 +344,11 @@ def main(
 
             pdf.set_xy(
                 x + x_off,
-                y + fix_font_y_pos[12]
+                y + fix_font_y_pos[14]
             )
 
             if text:
-                pdf.cell(width, text=text, align='C', fill=True, border=1)
+                pdf.cell(width, text=text, align='C', fill=True, border=0.5)
                 y += 5.5
 
     x, y = grid_start
