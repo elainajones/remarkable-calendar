@@ -389,30 +389,6 @@ def main(
                     width = pdf.get_string_width(t)
                     pdf.cell(width, text=t, align='C', link=link)
 
-            # Horizontal grid lines
-            pdf.set_draw_color(color_text)
-            pdf.set_line_width(0.5)
-
-            x, y = grid_start
-            for n in range(6):
-                # page width is 210mm (A4) and grid extends to 149.125mm
-                pdf.line(
-                    x + toolbar,
-                    y + ((149.12500 - y) / 5) * n,
-                    210 - x + toolbar,
-                    y + ((149.12500 - y) / 5) * n,
-                )
-            # Vertical grid lines
-            for n in range(8):
-                # page width is 210mm (A4) and grid extends to 149.125mm
-                pdf.line(
-                    x + ((210 - 2 * x) / 7) * n + toolbar,
-                    y,
-                    x + ((210 - 2 * x) / 7) * n + toolbar,
-                    149.12500,
-                )
-            x, y = monthly_day_num
-
             # New month, start from top
             last_month = month
             page += 1
@@ -503,64 +479,89 @@ def main(
             # End of week, start new line.
             a = 0
             b += 1
-        if b > 4:
+        if b <= 4:
             # No more rows, skip to next month.
             # This will still be visible in the next month even if they
             # don't all fit on one page.
+            pdf.set_text_color(color_text)
+
+            text = date.strftime('%d')
+            link = date_links[date.strftime('%F')][text]
+
+            width = pdf.get_string_width(text)
+            pdf.set_xy(x + (a * x_off), y + (b * y_off) + fix_font_y_pos[14])
+            pdf.cell(width, text=text, align='C', link=link)
+
+            # Add event banner
+            event = date.strftime('%m-%d')
+            event_list = important_dates.get(event, [])
+            ex, ey = monthly_day_event
+
+            pdf.set_font_size(10)
+
+            # VERY dumb bug where the font size changes to the wrong
+            # value EVEN THOUGH I SET IT. Somehow setting it to
+            # a different value makes the following change back
+            # actually persist.
+            pdf.set_fill_color(color_page_bg)
+            for event in event_list:
+                pdf.set_draw_color(color_event_bg)
+                pdf.set_fill_color(color_event_bg)
+                pdf.set_xy(
+                    ex + (a * x_off),
+                    ey + (b * y_off) + fix_font_y_pos[10]
+                )
+
+                t = event[0]
+                width = (210 - 2 * grid_start[0]) / 7
+                if int(event[-1]) and t:
+                    pdf.cell(
+                        width,
+                        text=t,
+                        align='C',
+                        fill=True,
+                        border=1,
+                    )
+                elif not int(event[-1]) and t:
+                    pdf.cell(
+                        width,
+                        text=' ',
+                        align='C',
+                        fill=True,
+                        border=1,
+                    )
+                ey += 4.5
+
+            pdf.set_font_size(14)
+            a += 1
+
+        d = (date_start + timedelta(days=i+1))
+        m = d.strftime('%m')
+        if b > 4 or not m == month:
+            # Horizontal grid lines
+            pdf.set_draw_color(color_text)
+            pdf.set_line_width(0.5)
+
+            x, y = grid_start
+            for n in range(6):
+                # page width is 210mm (A4) and grid extends to 149.125mm
+                pdf.line(
+                    x + toolbar,
+                    y + ((149.12500 - y) / 5) * n,
+                    210 - x + toolbar,
+                    y + ((149.12500 - y) / 5) * n,
+                )
+            # Vertical grid lines
+            for n in range(8):
+                # page width is 210mm (A4) and grid extends to 149.125mm
+                pdf.line(
+                    x + ((210 - 2 * x) / 7) * n + toolbar,
+                    y,
+                    x + ((210 - 2 * x) / 7) * n + toolbar,
+                    149.12500,
+                )
+            x, y = monthly_day_num
             continue
-
-        pdf.set_text_color(color_text)
-
-        text = date.strftime('%d')
-        link = date_links[date.strftime('%F')][text]
-
-        width = pdf.get_string_width(text)
-        pdf.set_xy(x + (a * x_off), y + (b * y_off) + fix_font_y_pos[14])
-        pdf.cell(width, text=text, align='C', link=link)
-
-        # Add event banner
-        event = date.strftime('%m-%d')
-        event_list = important_dates.get(event, [])
-        ex, ey = monthly_day_event
-
-        pdf.set_font_size(10)
-
-        # VERY dumb bug where the font size changes to the wrong
-        # value EVEN THOUGH I SET IT. Somehow setting it to
-        # a different value makes the following change back
-        # actually persist.
-        pdf.set_fill_color(color_page_bg)
-        for event in event_list:
-            pdf.set_draw_color(color_event_bg)
-            pdf.set_fill_color(color_event_bg)
-            pdf.set_xy(
-                ex + (a * x_off),
-                ey + (b * y_off) + fix_font_y_pos[10]
-            )
-
-            t = event[0]
-            width = (210 - 2 * grid_start[0]) / 7
-            if int(event[-1]) and t:
-                pdf.cell(
-                    width,
-                    text=t,
-                    align='C',
-                    fill=True,
-                    border=1,
-                )
-            elif not int(event[-1]) and t:
-                pdf.cell(
-                    width,
-                    text=' ',
-                    align='C',
-                    fill=True,
-                    border=1,
-                )
-            ey += 4.5
-
-        pdf.set_font_size(14)
-
-        a += 1
 
     if margin_links and toolbar:
         i = 0
