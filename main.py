@@ -58,7 +58,7 @@ def main(
     # x, y for event description.
     daily_day_event = (
         toolbar + grid_start[0] + (5.5 * 3.5),
-        toolbar + grid_start[1] + 5.5 - 1.8
+        grid_start[1] + 5.5 - 1.8
     )
 
     # x, y for separator line in header
