@@ -118,9 +118,11 @@ def main(
     important_dates = {}
     for row in date_rows:
         for year in range(date_start.year, date_end.year):
-            month, day, week_num, week_day, order = row[:5]
+            month, day, week_num, week_day, pos = row[:5]
             short_desc = row[5] or ''
             long_desc = row[6] or ''
+            # Can be positive or negative.
+            pos = pos and int(pos)
 
             key = None
             if not month:
@@ -131,20 +133,32 @@ def main(
                     month.zfill(2),
                     day.zfill(2),
                 ])
-            elif week_day and order:
+            elif week_day and isinstance(pos, int) and pos > 0:
                 week_day = week_day.lower()
-                order = int(order)
 
                 start = datetime(year=year, month=int(month), day=1)
                 end = datetime(year=year, month=int(month)+1, day=1)
-
                 for i in range((end-start).days):
                     date = start + timedelta(days=i)
-                    if not order:
+
+                    if not pos:
                         break
                     elif date.strftime('%A').lower() == week_day:
                         key = date.strftime('%Y-%m-%d')
-                        order -= 1
+                        pos -= 1
+            elif week_day and isinstance(pos, int) and pos < 0:
+                week_day = week_day.lower()
+
+                start = datetime(year=year, month=int(month), day=1)
+                end = datetime(year=year, month=int(month)+1, day=1)
+                for i in range((end-start).days):
+                    date = end - timedelta(days=i)
+
+                    if not pos:
+                        break
+                    elif date.strftime('%A').lower() == week_day:
+                        key = date.strftime('%Y-%m-%d')
+                        pos += 1
 
             if not key:
                 continue
