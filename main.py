@@ -473,15 +473,16 @@ def main(
                             ey + fix_font_y_pos[10]
                         )
 
-                        t = event[0] or ' '
-                        width = (210 - 2 * grid_start[0]) / 7
-                        pdf.cell(
-                            width,
-                            text=t,
-                            align='C',
-                            fill=True,
-                            border=1,
-                        )
+                        if event[0] or event[1]:
+                            t = event[0] or ' '
+                            width = (210 - 2 * grid_start[0]) / 7
+                            pdf.cell(
+                                width,
+                                text=t,
+                                align='C',
+                                fill=True,
+                                border=1,
+                            )
                         ey += 4.5
 
                     pdf.set_font_size(14)
@@ -521,15 +522,16 @@ def main(
                     ey + (b * y_off) + fix_font_y_pos[10]
                 )
 
-                t = event[0] or ' '
-                width = (210 - 2 * grid_start[0]) / 7
-                pdf.cell(
-                    width,
-                    text=t,
-                    align='C',
-                    fill=True,
-                    border=1,
-                )
+                if event[0] or event[1]:
+                    t = event[0] or ' '
+                    width = (210 - 2 * grid_start[0]) / 7
+                    pdf.cell(
+                        width,
+                        text=t,
+                        align='C',
+                        fill=True,
+                        border=1,
+                    )
                 ey += 4.5
 
             pdf.set_font_size(14)
@@ -588,15 +590,16 @@ def main(
                             ey + fix_font_y_pos[10] + (b * y_off)
                         )
 
-                        t = event[0] or ' '
-                        width = (210 - 2 * grid_start[0]) / 7
-                        pdf.cell(
-                            width,
-                            text=t,
-                            align='C',
-                            fill=True,
-                            border=1,
-                        )
+                        if event[0] or event[1]:
+                            t = event[0] or ' '
+                            width = (210 - 2 * grid_start[0]) / 7
+                            pdf.cell(
+                                width,
+                                text=t,
+                                align='C',
+                                fill=True,
+                                border=1,
+                            )
                         ey += 4.5
 
                 pdf.set_font_size(14)
