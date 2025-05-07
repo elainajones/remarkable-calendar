@@ -17,14 +17,18 @@
 
 ## What is this?
 
-A minimal PDF calendar for the ReMarkable 2, inspired by the Hobonichi Techo planner. This PDF calendar is created using a script but a pre-made calendar can be [downloaded from here](https://github.com/elainajones/remarkable-calendar/releases/latest).
+A minimal PDF calendar for the ReMarkable 2, inspired by the Hobonichi  
+Techo planner. This PDF calendar is created using a script but pre-made  
+calendars can be [downloaded from here](https://github.com/elainajones/remarkable-calendar/releases/latest).
 
 ### Features
 
 - Optional PDF creation script for custom date ranges.
 - Clickable dates for fast navigation!
-    - From the month view, click the dates to jump to the corresponding day view page.
-    - From the day view, click the month name to jump to the corresponding month view page.
+    - From the month view, click the dates to jump to the  
+      corresponding day view page.
+    - From the day view, click the month name to jump to the  
+      corresponding month view page.
 - Hour rulings for each day.
 - 1:1 scaling suitable for print.
 - A4 document size (also supports US letter)
@@ -34,7 +38,9 @@ A minimal PDF calendar for the ReMarkable 2, inspired by the Hobonichi Techo pla
 
 ## How do I use this?
 
-To use, simply download a copy of the PDF. Once copied to the ReMarkable 2, open the PDF and set the viewing for landscape mode. Be sure to set the page scaling to fit the screen width.
+To use, simply download a copy of the PDF and upload to the Remarkable 2.  
+Once uploaded, open the PDF and set the viewing for landscape mode.  
+Be sure to set the page scaling to fit the screen width.
 
 Continue reading for instructions using the code included in this repository.
 
@@ -63,8 +69,9 @@ Continue reading for instructions using the code included in this repository.
 
 ### Usage
 
-The simplest way to run the code is to enter the following command. The current
-year will be automatically determined from your computer's date settings.
+The simplest way to run the code is to enter the following command.  
+The current year will be automatically determined from your computer's  
+date settings.
 
 ```
 python3 main.py
@@ -74,7 +81,8 @@ A calendar PDF will be saved locally as `calendar.pdf`.
 
 ### Customization
 
-The `-h` or `--help` option can be added to the end of the command to show additional options.
+The `-h` or `--help` option can be added to the end of the command to  
+show additional options.
 
 ```
 python3 main.py --help
@@ -89,30 +97,40 @@ This includes the following options to customize the date range.
     - Human readable date with support for multiple formats
     - eg: `'2024/09/27'` or `'Sept 9, 2024'` (make sure to enclose inside `'`)
 
-Advanced users familiar with Python can customize the font by providing their own font files.
+Advanced users familiar with Python can customize the font by providing  
+their own font files.
 
 ### Adding Important Dates
 
-Important dates can be added to the calendar by editing the 'dates.csv' file or
-supplying a custom path using the `--date-file` argument.
+Important dates can be added to the calendar by editing the 'dates.csv'  
+file or supplying a custom path using the `--date-file` argument.
 
-This file expects to have the following 4 columns.
+- Rows will be added in the order they are listed.
+- If no Long Description is provided, the Short description will be  
+  used instead.
+- The Short Description can be left blank.
+- For fixed dates
+    - Month, Day, and Short Description columns need to be filled
+- For non-fixed dates
+    - Day must be left blank
+    - Month, Week Day, Order columns need to be filled
 
-```csv
-mm-dd,short description,long description,1 or 0 for short text visibility
-```
+The following is the expected structure of the `dates.csv` file,  
+including examples for dates you can add. Not all columns need to to  
+contain values.
 
-Using `0` for the visibility only effects the label visibility in the month
-view and can be modified at the user's discretion. Regardless of this value,
-the long description will be added for the day view with the short description
-being used if no value is supplied for the long description.
+|Month|Day|Week Number|Week Day|Order|Short Description|Long Description         |
+|----:|--:|----------:|:-------|----:|:----------------|:------------------------|
+|1    |1  |           |        |     |Example Range    |Example Range            |
+|1    |2  |           |        |     |Example Range    |Example Range            |
+|1    |3  |           |        |     |Example Range    |Example Range            |
+|2    |29 |           |        |     |Leap Day         |                         |
+|3    |8  |           |        |     |Int'l Women's Day|International Women's Day|
+|5    |   |           |Sunday  |2    |Mother's Day     |                         |
+|6    |   |           |Sunday  |3    |Father's Day     |                         |
 
 Multiple events can be added to the same day and will be added under any
 previous event in the order added. To add an empty space for alignment,
-an empty description can be added as shown below.
-
-```csv
-mm-dd,,,1
-```
+an empty description can be added.
 
 You may also refer to the default values in `dates.csv` as an additional example.
