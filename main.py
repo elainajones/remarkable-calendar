@@ -102,15 +102,69 @@ def main(
     date_days = (date_end - date_start).days
     script_path = os.path.realpath(__file__)
 
-    important_dates = {}
+    date_rows = []
     if os.path.exists(date_file):
         with open(date_file, 'r') as f:
             reader = csv.reader(f, delimiter=',')
             for row in reader:
-                if row[0] not in important_dates.keys():
-                    important_dates[row[0]] = [row[1:]]
-                else:
-                    important_dates[row[0]].append(row[1:])
+                if not any([i.isdigit() for i in row]):
+                    continue
+
+                r = [*row, *[None] * (7-len(row))]
+                # r = [(i.isdigit() and int(i)) or i for i in r]
+
+                date_rows.append(r)
+
+    important_dates = {}
+    for row in date_rows:
+        for year in range(date_start.year, date_end.year):
+            month, day, week_num, week_day, pos = row[:5]
+            short_desc = row[5] or ''
+            long_desc = row[6] or ''
+            # Can be positive or negative.
+            pos = pos and int(pos)
+
+            key = None
+            if not month:
+                continue
+            elif day:
+                key = '-'.join([
+                    str(year).zfill(4),
+                    month.zfill(2),
+                    day.zfill(2),
+                ])
+            elif week_day and isinstance(pos, int) and pos > 0:
+                week_day = week_day.lower()
+
+                start = datetime(year=year, month=int(month), day=1)
+                end = datetime(year=year, month=int(month)+1, day=1)
+                for i in range((end-start).days):
+                    date = start + timedelta(days=i)
+
+                    if not pos:
+                        break
+                    elif date.strftime('%A').lower() == week_day:
+                        key = date.strftime('%Y-%m-%d')
+                        pos -= 1
+            elif week_day and isinstance(pos, int) and pos < 0:
+                week_day = week_day.lower()
+
+                start = datetime(year=year, month=int(month), day=1)
+                end = datetime(year=year, month=int(month)+1, day=1)
+                for i in range((end-start).days):
+                    date = end - timedelta(days=i)
+
+                    if not pos:
+                        break
+                    elif date.strftime('%A').lower() == week_day:
+                        key = date.strftime('%Y-%m-%d')
+                        pos += 1
+
+            if not key:
+                continue
+            elif not important_dates.get(key):
+                important_dates[key] = []
+            important_dates[key].append((row[5], row[6]))
     # Font
     font_file = os.path.join(
         os.path.dirname(script_path),
@@ -333,7 +387,7 @@ def main(
             pdf.cell(width, text=text, align='C', fill=True, border=1)
 
         # Add event description.
-        event = date.strftime('%m-%d')
+        event = date.strftime('%Y-%m-%d')
         event_list = important_dates.get(event, [])
         x, y = daily_day_event
         # pdf.set_font_size(12)
@@ -404,7 +458,7 @@ def main(
 
                     # Temporary text var
                     t = (d - timedelta(days=n)).strftime('%d')
-                    event = (d - timedelta(days=n)).strftime('%m-%d')
+                    event = (d - timedelta(days=n)).strftime('%Y-%m-%d')
 
                     # Temporary date var (formatted)
                     d = (d - timedelta(days=n)).strftime('%F')
@@ -433,20 +487,12 @@ def main(
                             ey + fix_font_y_pos[10]
                         )
 
-                        t = event[0]
-                        width = (210 - 2 * grid_start[0]) / 7
-                        if int(event[-1]) and t:
+                        if event[0] or event[1]:
+                            t = event[0] or ' '
+                            width = (210 - 2 * grid_start[0]) / 7
                             pdf.cell(
                                 width,
                                 text=t,
-                                align='C',
-                                fill=True,
-                                border=1,
-                            )
-                        elif not int(event[-1]) and t:
-                            pdf.cell(
-                                width,
-                                text=' ',
                                 align='C',
                                 fill=True,
                                 border=1,
@@ -470,7 +516,7 @@ def main(
             pdf.cell(width, text=text, align='C', link=link)
 
             # Add event banner
-            event = date.strftime('%m-%d')
+            event = date.strftime('%Y-%m-%d')
             event_list = important_dates.get(event, [])
             ex, ey = monthly_day_event
 
@@ -490,20 +536,12 @@ def main(
                     ey + (b * y_off) + fix_font_y_pos[10]
                 )
 
-                t = event[0]
-                width = (210 - 2 * grid_start[0]) / 7
-                if int(event[-1]) and t:
+                if event[0] or event[1]:
+                    t = event[0] or ' '
+                    width = (210 - 2 * grid_start[0]) / 7
                     pdf.cell(
                         width,
                         text=t,
-                        align='C',
-                        fill=True,
-                        border=1,
-                    )
-                elif not int(event[-1]) and t:
-                    pdf.cell(
-                        width,
-                        text=' ',
                         align='C',
                         fill=True,
                         border=1,
@@ -555,7 +593,7 @@ def main(
                     # actually persist.
                     pdf.set_fill_color(color_page_bg)
                     pdf.set_draw_color(color_page_bg)
-                    event = d.strftime('%m-%d')
+                    event = d.strftime('%Y-%m-%d')
                     event_list = important_dates.get(event, [])
                     ex, ey = monthly_day_event
                     for event in event_list:
@@ -566,20 +604,12 @@ def main(
                             ey + fix_font_y_pos[10] + (b * y_off)
                         )
 
-                        t = event[0]
-                        width = (210 - 2 * grid_start[0]) / 7
-                        if int(event[-1]) and t:
+                        if event[0] or event[1]:
+                            t = event[0] or ' '
+                            width = (210 - 2 * grid_start[0]) / 7
                             pdf.cell(
                                 width,
                                 text=t,
-                                align='C',
-                                fill=True,
-                                border=1,
-                            )
-                        elif not int(event[-1]) and t:
-                            pdf.cell(
-                                width,
-                                text=' ',
                                 align='C',
                                 fill=True,
                                 border=1,
