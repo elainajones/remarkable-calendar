@@ -108,10 +108,10 @@ file or supplying a custom path using the `--date-file` argument.
 - Rows will be added in the order they are listed.
 - If no Long Description is provided, the Short description will be  
   used instead.
-- The Short Description can be left blank.
-- For fixed dates
+- Short descriptions should be kept under 16 chars to avoid overlapping.
+- Fixed dates
     - Month, Day, and Short Description columns need to be filled
-- For non-fixed dates
+- Non-fixed dates
     - Day must be left blank
     - Month, Week Day, Order columns need to be filled
 
@@ -121,16 +121,20 @@ contain values.
 
 |Month|Day|Week Number|Week Day|Order|Short Description|Long Description         |
 |----:|--:|----------:|:-------|----:|:----------------|:------------------------|
-|1    |1  |           |        |     |Example Range    |Example Range            |
-|1    |2  |           |        |     |Example Range    |Example Range            |
-|1    |3  |           |        |     |Example Range    |Example Range            |
-|2    |29 |           |        |     |Leap Day         |                         |
-|3    |8  |           |        |     |Int'l Women's Day|International Women's Day|
-|5    |   |           |Sunday  |2    |Mother's Day     |                         |
-|6    |   |           |Sunday  |3    |Father's Day     |                         |
+|1    |1  |           |        |     |New Year's       |Happy New year!          |
+|1    |7  |           |        |     |Example Range 1  |Example Range 1          |
+|1    |8  |           |        |     |                 |Example Range 1          |
+|1    |8  |           |        |     |Example Range 2  |Example Range 2          |
+|1    |9  |           |        |     |                 |                         |
+|1    |9  |           |        |     |Example Range 2  |Example Range 2          |
+|5    |   |           |Monday  |-1   |Memorial Day     |                         |
 
-Multiple events can be added to the same day and will be added under any
-previous event in the order added. To add an empty space for alignment,
-an empty description can be added.
+Multiple events can be added for the same day and will be displayed in  
+the same order they are added. A date range can be achieved by adding  
+consecutive dates. For overlapping ranges, a blank entry can be added  
+for alignment (refer to the example table above). The short description  
+can be left blank for the consecutive days.
 
-You may also refer to the default values in `dates.csv` as an additional example.
+For example:
+
+![](./img/example_date_range.png)
