@@ -22,7 +22,8 @@ def main(
     elif handedness.lower() == 'left':
         toolbar = -5
         toolbar_links = (210 - 12, 15.624 - 5.5/2)
-    elif handedness.lower() == 'right':
+    else:
+        # Right handedness
         toolbar = 5
         toolbar_links = (12, 15.624 - 5.5/2)
 
@@ -75,8 +76,8 @@ def main(
 
     # Dumb fix for text y position not matching my Inkscape draft
     # exactly. Need to correct the render position by a fixed value from
-    # guess-and-check. This is probably a quirk with inkscape and doesn't
-    # need to be NASA precise anyway.
+    # guess-and-check. This is probably a quirk with Inkscape and doesn't
+    # need to be NASA-precise anyway but accuracy helps when designing.
     fix_font_y_pos = {
         42: 1.1,
         22: -1.2,
@@ -102,6 +103,21 @@ def main(
     date_days = (date_end - date_start).days
     script_path = os.path.realpath(__file__)
 
+    # Font
+    font_file = os.path.join(
+        os.path.dirname(script_path),
+        'res',
+        'GentiumPlus-6.200',
+        'GentiumPlus-Regular.ttf'
+    )
+    font_family = 'Gentium Plus'
+    font_style = ''
+
+    pdf = FPDF('P', 'mm', 'A4')
+    pdf.add_font(family=font_family, style=font_style, fname=font_file)
+    pdf.set_font(font_family, font_style, 42)
+
+    # Unpack the rows from the date file.
     date_rows = []
     if os.path.exists(date_file):
         with open(date_file, 'r') as f:
@@ -111,16 +127,18 @@ def main(
                     continue
 
                 r = [*row, *[None] * (7-len(row))]
-
                 date_rows.append(r)
 
+    # Define important dates based on the date rows.
+    # Actual dates of non-fixed important dates (such as 2nd Sunday
+    # in May for Mother's Day, etc) will be determined here.
     important_dates = {}
     for row in date_rows:
         for year in range(date_start.year, date_end.year):
             month, day, week_num, week_day, pos = row[:5]
             short_desc = row[5] or ''
             long_desc = row[6] or ''
-            # Can be positive or negative.
+            # Can be positive or negative
             pos = pos and int(pos)
 
             key = None
@@ -132,6 +150,7 @@ def main(
                     month.zfill(2),
                     day.zfill(2),
                 ])
+            # Positive positions (e.g. 2nd Sunday of May)
             elif week_day and isinstance(pos, int) and pos > 0:
                 week_day = week_day.lower()
 
@@ -139,6 +158,7 @@ def main(
                 if int(month) < 12:
                     end = datetime(year=year, month=int(month)+1, day=1)
                 else:
+                    # Next month is next year. Roll over.
                     end = datetime(year=year+1, month=1, day=1)
 
                 for i in range((end-start).days):
@@ -149,6 +169,7 @@ def main(
                     elif date.strftime('%A').lower() == week_day:
                         key = date.strftime('%Y-%m-%d')
                         pos -= 1
+            # Negative positions (e.g. Last Monday of May)
             elif week_day and isinstance(pos, int) and pos < 0:
                 week_day = week_day.lower()
 
@@ -156,6 +177,7 @@ def main(
                 if int(month) < 12:
                     end = datetime(year=year, month=int(month)+1, day=1)
                 else:
+                    # Next month is next year. Roll over.
                     end = datetime(year=year+1, month=1, day=1)
 
                 for i in range((end-start).days):
@@ -172,19 +194,6 @@ def main(
             elif not important_dates.get(key):
                 important_dates[key] = []
             important_dates[key].append((row[5], row[6]))
-    # Font
-    font_file = os.path.join(
-        os.path.dirname(script_path),
-        'res',
-        'GentiumPlus-6.200',
-        'GentiumPlus-Regular.ttf'
-    )
-    font_family = 'Gentium Plus'
-    font_style = ''
-
-    pdf = FPDF('P', 'mm', 'A4')
-    pdf.add_font(family=font_family, style=font_style, fname=font_file)
-    pdf.set_font(font_family, font_style, 42)
 
     # eg: {'2024-10-27' : {'10': month_link, '27': day_link}}
     date_links = {}
@@ -377,8 +386,7 @@ def main(
         # Hour labels
         x, y = daily_hour_num
         pdf.set_font_size(14)
-        # Fill the hour cell and add a border so the hour is seperated
-        # from the ruling lines.
+        # Fill the hour cell and add a border to cover the ruling lines.
         pdf.set_line_width(1)
         pdf.set_draw_color(color_page_bg)
         pdf.set_fill_color(color_page_bg)
@@ -480,13 +488,14 @@ def main(
 
                     pdf.set_font_size(10)
 
-                    # VERY dumb bug where the font size changes to the wrong
-                    # value EVEN THOUGH I SET IT. Somehow setting it to
-                    # a different value makes the following change back
-                    # actually persist.
+                    # VERY dumb fix for a bug where the font size
+                    # changes to the wrong value EVEN THOUGH I SET IT.
+                    # Somehow setting it to a different value makes the
+                    # following change back actually persist.
                     pdf.set_fill_color(color_page_bg)
                     pdf.set_draw_color(color_page_bg)
                     for event in event_list:
+                        # Embrace the recursion! (I know. It's bad)
                         pdf.set_fill_color(color_event_bg)
                         pdf.set_draw_color(color_event_bg)
                         pdf.set_xy(
@@ -529,10 +538,10 @@ def main(
 
             pdf.set_font_size(10)
 
-            # VERY dumb bug where the font size changes to the wrong
-            # value EVEN THOUGH I SET IT. Somehow setting it to
-            # a different value makes the following change back
-            # actually persist.
+            # VERY dumb fix for a bug where the font size
+            # changes to the wrong value EVEN THOUGH I SET IT.
+            # Somehow setting it to a different value makes the
+            # following change back actually persist.
             pdf.set_fill_color(color_page_bg)
             pdf.set_draw_color(color_page_bg)
             for event in event_list:
@@ -594,10 +603,10 @@ def main(
                     pdf.cell(width, text=t, align='C', link=link)
 
                     pdf.set_font_size(10)
-                    # VERY dumb bug where the font color to the wrong
-                    # value EVEN THOUGH I SET IT. Somehow setting it to
-                    # a different value makes the following change back
-                    # actually persist.
+                    # VERY dumb fix for a bug where the font size
+                    # changes to the wrong value EVEN THOUGH I SET IT.
+                    # Somehow setting it to a different value makes the
+                    # following change back actually persist.
                     pdf.set_fill_color(color_page_bg)
                     pdf.set_draw_color(color_page_bg)
                     event = d.strftime('%Y-%m-%d')
@@ -652,19 +661,17 @@ def main(
 
     if margin_links and toolbar:
         i = 0
-        # Embrace the recursion (I know. It's bad)
         for p in range(len(month_links)):
             pdf.page = p + 1
             # Limit range of months to 12 since this is the
             # most we can fit in the side bar.
             display_range = month_links[i: 12+i]
-            # VERY dumb bug where the font size changes to the wrong
-            # value EVEN THOUGH I SET IT TO BE 14. Somehow setting it to
-            # a different value makes the following change back to 14
-            # actually persist.
+            # VERY dumb fix for a bug where the font size
+            # changes to the wrong value EVEN THOUGH I SET IT.
+            # Somehow setting it to a different value makes the
+            # following change back actually persist.
             pdf.set_font_size(12)
 
-            # Embrace the recursion (I know)
             for d in range(len(display_range)):
                 date, link = display_range[d]
                 text = date.strftime('%B')
@@ -730,8 +737,7 @@ def main(
 
             for d in range(len(display_range)):
                 date, link = display_range[d]
-                # Get link for first of the month.
-                # link = date_links[date.strftime('%Y-%m-01')]['01']
+
                 text = date.strftime('%B')
                 text = text[:3]
                 width = pdf.get_string_width(text)
