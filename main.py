@@ -111,7 +111,6 @@ def main(
                     continue
 
                 r = [*row, *[None] * (7-len(row))]
-                # r = [(i.isdigit() and int(i)) or i for i in r]
 
                 date_rows.append(r)
 
@@ -137,7 +136,11 @@ def main(
                 week_day = week_day.lower()
 
                 start = datetime(year=year, month=int(month), day=1)
-                end = datetime(year=year, month=int(month)+1, day=1)
+                if int(month) < 12:
+                    end = datetime(year=year, month=int(month)+1, day=1)
+                else:
+                    end = datetime(year=year+1, month=1, day=1)
+
                 for i in range((end-start).days):
                     date = start + timedelta(days=i)
 
@@ -150,7 +153,11 @@ def main(
                 week_day = week_day.lower()
 
                 start = datetime(year=year, month=int(month), day=1)
-                end = datetime(year=year, month=int(month)+1, day=1)
+                if int(month) < 12:
+                    end = datetime(year=year, month=int(month)+1, day=1)
+                else:
+                    end = datetime(year=year+1, month=1, day=1)
+
                 for i in range((end-start).days):
                     date = end - timedelta(days=i)
 
