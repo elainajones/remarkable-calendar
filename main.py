@@ -13,14 +13,13 @@ def main(
     hour_interval: int,
     save_path: str,
     week_start: str = 'monday',
-    handedness="right",
+    toolbar_pos="left",
     date_file=None,
 ) -> None:
-    if handedness.lower() == 'left':
+    if toolbar_pos.lower() == 'right':
         toolbar = -5
         toolbar_links = (210 - 12, 15.624 - 5.5/2)
     else:
-        # Right handedness
         toolbar = 5
         toolbar_links = (12, 15.624 - 5.5/2)
 
@@ -707,6 +706,8 @@ def main(
         else:
             i += 1
 
+    # Add toolbar links for the day view.
+    # i will increment from the alst position (after the monthly pages).
     i = 0
     n = 0
     page = pdf.page
@@ -763,6 +764,12 @@ def main(
 
         if not last_month == month:
             last_month = month
+            # Don't shift the "display window" if our date range is
+            # less than 12 since it fits perfectly, if we've reached the
+            # end, or if we've not gone forward enough to justify it.
+            # Rathe than shift at the end of every month, we shift only
+            # if we've crossed the halfway point to keep next and
+            # previous month view links visible.
             if any([
                 len(month_links) <= 12,
                 len(month_links) == 12+i,
@@ -804,8 +811,8 @@ if __name__ == '__main__':
         choices=range(1, 24)
     )
     parser.add_argument(
-        '--toolbar-space',
-        default='right',
+        '--toolbar-position',
+        default='left',
         choices=['left', 'right']
     )
     parser.add_argument(
@@ -830,7 +837,7 @@ if __name__ == '__main__':
     end_date = dateparser.parse(args.end_date)
     hour_interval = args.hour_interval
     week_start = args.week_start
-    handedness = args.toolbar_space
+    toolbar_pos = args.toolbar_position
     date_file = args.date_file
     save_path = args.out
 
@@ -840,6 +847,6 @@ if __name__ == '__main__':
         hour_interval,
         save_path,
         week_start,
-        handedness,
+        toolbar_pos,
         date_file,
     )
