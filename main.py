@@ -191,13 +191,10 @@ def main(
                 important_dates[key] = []
             important_dates[key].append((row[5], row[6]))
 
-    # eg: {'2024-10-27' : {'10': month_link, '27': day_link}}
+    # eg: {'2024-10-27' : {'monthly': month_link, 'daily': day_link}}
     date_links = {}
-    # eg: [('2024-10', link)]
-    month_links = []
 
     last_month = None
-    link_id = None
     # Iterate the days to make blank month pages. This also creates
     # page links for the daily view.
     for i in range(date_days):
@@ -273,10 +270,8 @@ def main(
                 style='F'
             )
 
-            month_links.append((date, link_id))
-
-        date_links[date.strftime('%F')] = {}
-        date_links[date.strftime('%F')][month] = link_id
+        date_links[date.strftime('%F')] = {'date': date}
+        date_links[date.strftime('%F')].update({'monthly': link_id})
 
     # Make daily view. This also makes page links for the monthly view.
     for i in range(date_days):
@@ -301,7 +296,7 @@ def main(
         text = date.strftime('%d')
         width = pdf.get_string_width(text)
 
-        date_links[date.strftime('%F')][text] = link_id
+        date_links[date.strftime('%F')].update({'daily': link_id})
 
         x, y = daily_day_num
         pdf.set_xy((x + x_off) - (width / 2), y + fix_font_y_pos[42])
@@ -325,7 +320,7 @@ def main(
         text = date.strftime('%B')
         width = pdf.get_string_width(text)
 
-        link = date_links[date.strftime('%F')][text]
+        link = date_links[date.strftime('%F')]['monthly']
 
         x, y = daily_month_name
         pdf.set_xy((x + x_off), y + fix_font_y_pos[16])
@@ -473,7 +468,7 @@ def main(
 
                     # Temporary date var (formatted)
                     d = (d - timedelta(days=n)).strftime('%F')
-                    link = date_links[d][t]
+                    link = date_links[d]['daily']
 
                     width = pdf.get_string_width(t)
                     pdf.cell(width, text=t, align='C', link=link)
@@ -521,7 +516,7 @@ def main(
             pdf.set_text_color(color_text)
 
             text = date.strftime('%d')
-            link = date_links[date.strftime('%F')][text]
+            link = date_links[date.strftime('%F')]['daily']
 
             width = pdf.get_string_width(text)
             pdf.set_xy(x + (a * x_off), y + (b * y_off) + fix_font_y_pos[14])
@@ -593,7 +588,7 @@ def main(
                     d = date_start + timedelta(days=i+n+1)
                     t = d.strftime('%d')
                     link = date_links.get(d.strftime('%F'), {})
-                    link = link.get(t, None)
+                    link = link.get('daily', None)
 
                     width = pdf.get_string_width(t)
                     pdf.cell(width, text=t, align='C', link=link)
@@ -655,6 +650,19 @@ def main(
             x, y = monthly_day_num
             continue
 
+    key_list = list(date_links.keys())
+    key_list.sort()
+
+    link = None
+    month_links = []
+    for i in key_list:
+        val = date_links[i]
+        if not val.get('monthly'):
+            continue
+        elif val['monthly'] != link:
+            link = val['monthly']
+            month_links.append((val['date'], val['monthly']))
+
     i = 0
     for p in range(len(month_links)):
         pdf.page = p + 1
@@ -706,8 +714,6 @@ def main(
         else:
             i += 1
 
-    # Add toolbar links for the day view.
-    # i will increment from the alst position (after the monthly pages).
     i = 0
     n = 0
     page = pdf.page
@@ -767,7 +773,7 @@ def main(
             # Don't shift the "display window" if our date range is
             # less than 12 since it fits perfectly, if we've reached the
             # end, or if we've not gone forward enough to justify it.
-            # Rathe than shift at the end of every month, we shift only
+            # Rather than shift at the end of every month, we shift only
             # if we've crossed the halfway point to keep next and
             # previous month view links visible.
             if any([
