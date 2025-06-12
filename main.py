@@ -193,16 +193,21 @@ def main(
 
     # eg: {'2024-10-27' : {'monthly': month_link, 'daily': day_link}}
     date_links = {}
+    section_start = {}
 
+    ##################################################################
+    # Init monthly view
+    ##################################################################
     last_month = None
-    # Iterate the days to make blank month pages. This also creates
-    # page links for the daily view.
     for i in range(date_days):
         date = date_start + timedelta(days=i)
         month = date.strftime('%B')
         if not last_month == month:
             # New month, make page.
             pdf.add_page()
+
+            if not section_start.get('monthly'):
+                section_start['monthly'] = pdf.page
 
             link_id = pdf.add_link()
             pdf.set_link(link_id)
@@ -273,7 +278,9 @@ def main(
         date_links[date.strftime('%F')] = {'date': date}
         date_links[date.strftime('%F')].update({'monthly': link_id})
 
-    # Make daily view. This also makes page links for the monthly view.
+    ##################################################################
+    # Init daily view
+    ##################################################################
     for i in range(date_days):
         if i == 0:
             pdf.add_page()
@@ -287,6 +294,9 @@ def main(
             x_off = 0
         else:
             x_off = 100.497
+
+        if not section_start.get('daily'):
+            section_start['daily'] = pdf.page
 
         # Month day
         pdf.set_font_size(42)
@@ -410,6 +420,72 @@ def main(
             if text:
                 pdf.cell(width, text=text, align='C', fill=True, border=0.5)
                 y += 5.5
+
+    ##################################################################
+    # Init habit tracker
+    ##################################################################
+    last_month = None
+    for i in range(date_days):
+        date = date_start + timedelta(days=i)
+        month = date.strftime('%B')
+        if not last_month == month:
+            # New month, make page.
+            pdf.add_page()
+
+            if not section_start.get('habit'):
+                section_start['habit'] = pdf.page
+
+            link_id = pdf.add_link()
+            pdf.set_link(link_id)
+            last_month = month
+
+            # Separator line
+            pdf.set_draw_color(color_text)
+            pdf.set_line_width(0.5)
+
+            x, y = monthly_header_sep
+            # 13mm long
+            pdf.line(
+                x,
+                y,
+                x,
+                y + 13,
+            )
+
+            # Month name
+            pdf.set_font_size(42)
+            pdf.set_text_color(color_text)
+
+            text = date.strftime('%B')
+            width = pdf.get_string_width(text)
+
+            x, y = monthly_month_name
+            pdf.set_xy(x, y + fix_font_y_pos[42])
+            pdf.cell(width, text=text, align='C')
+
+            # Month number
+            pdf.set_font_size(22)
+            pdf.set_text_color(color_text)
+
+            text = date.strftime('%m')
+            width = pdf.get_string_width(text)
+
+            x, y = monthly_month_num
+            pdf.set_xy(x - width, y + fix_font_y_pos[22])
+            pdf.cell(width, text=text, align='C')
+
+            # Year
+            pdf.set_font_size(16)
+            pdf.set_text_color(color_text)
+
+            text = date.strftime('%Y')
+            width = pdf.get_string_width(text)
+
+            x, y = monthly_year
+            pdf.set_xy(x - width, y + fix_font_y_pos[16])
+            pdf.cell(width, text=text, align='C')
+
+        date_links[date.strftime('%F')].update({'habit': link_id})
 
     x, y = grid_start
     # page width is 210mm (A4) and grid extends to 149.125mm
@@ -650,6 +726,9 @@ def main(
             x, y = monthly_day_num
             continue
 
+    ##################################################################
+    # Month links (monthly)
+    ##################################################################
     key_list = list(date_links.keys())
     key_list.sort()
 
@@ -714,6 +793,9 @@ def main(
         else:
             i += 1
 
+    ##################################################################
+    # Month links (daily)
+    ##################################################################
     i = 0
     n = 0
     page = pdf.page
@@ -785,6 +867,60 @@ def main(
             else:
                 i += 1
             n += 1
+
+    ##################################################################
+    # Month links (habit)
+    ##################################################################
+    i = 0
+    for p in range(len(month_links)):
+        pdf.page = p + section_start['habit']
+        # Limit range of months to 12 since this is the
+        # most we can fit in the side bar.
+        display_range = month_links[i: 12+i]
+        # VERY dumb fix for a bug where the font size
+        # changes to the wrong value EVEN THOUGH I SET IT.
+        # Somehow setting it to a different value makes the
+        # following change back actually persist.
+        pdf.set_font_size(12)
+
+        for d in range(len(display_range)):
+            date, link = display_range[d]
+            text = date.strftime('%B')
+            text = text[:3]
+
+            pdf.set_font_size(14)
+            width = pdf.get_string_width(text)
+
+            x, y = toolbar_links
+            if month_links[p][0].strftime('%F') == date.strftime('%F'):
+                pdf.set_text_color(color_text)
+                link = None
+            else:
+                pdf.set_text_color(color_text_light)
+
+            if toolbar > 0:
+                # Right handed
+                pdf.set_xy(
+                    x - width - 1.5,
+                    y + ((5.5 * 2) * (d + 1)) + fix_font_y_pos[14]
+                )
+            else:
+                # Left handed
+                pdf.set_xy(
+                    x + 1.5,
+                    y + ((5.5 * 2) * (d + 1)) + fix_font_y_pos[14]
+                )
+
+            pdf.cell(width, text=text, align='C', link=link)
+
+        if any([
+            len(month_links) <= 12,
+            len(month_links) == 12+i,
+            p < 5,
+        ]):
+            pass
+        else:
+            i += 1
 
     # Save
     pdf.output(save_path)
