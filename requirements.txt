@@ -1,4 +1,4 @@
-dateparser==1.2.0
+dateparser==1.2.1
 defusedxml==0.7.1
 fonttools==4.54.1
 fpdf2==2.7.9
