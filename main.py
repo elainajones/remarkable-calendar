@@ -18,10 +18,10 @@ def main(
 ) -> None:
     if toolbar_pos.lower() == 'right':
         toolbar = -5
-        toolbar_links = (210 - 12, 15.624 - 5.5/2)
+        toolbar_links = (210 - 12, 15.624 - 5.5 / 2)
     else:
         toolbar = 5
-        toolbar_links = (12, 15.624 - 5.5/2)
+        toolbar_links = (12, 15.624 - 5.5 / 2)
 
     # Text color (90% gray)
     color_text = (26, 26, 26)
@@ -122,7 +122,7 @@ def main(
                 if not any([i.isdigit() for i in row]):
                     continue
 
-                r = [*row, *[None] * (7-len(row))]
+                r = [*row, *[None] * (7 - len(row))]
                 date_rows.append(r)
 
     # Define important dates based on the date rows.
@@ -132,8 +132,6 @@ def main(
     for row in date_rows:
         for year in range(date_start.year, date_end.year):
             month, day, week_num, week_day, pos = row[:5]
-            short_desc = row[5] or ''
-            long_desc = row[6] or ''
             # Can be positive or negative
             pos = pos and int(pos)
 
@@ -152,12 +150,12 @@ def main(
 
                 start = datetime(year=year, month=int(month), day=1)
                 if int(month) < 12:
-                    end = datetime(year=year, month=int(month)+1, day=1)
+                    end = datetime(year=year, month=int(month) + 1, day=1)
                 else:
                     # Next month is next year. Roll over.
-                    end = datetime(year=year+1, month=1, day=1)
+                    end = datetime(year=year + 1, month=1, day=1)
 
-                for i in range((end-start).days):
+                for i in range((end - start).days):
                     date = start + timedelta(days=i)
 
                     if not pos:
@@ -171,12 +169,12 @@ def main(
 
                 start = datetime(year=year, month=int(month), day=1)
                 if int(month) < 12:
-                    end = datetime(year=year, month=int(month)+1, day=1)
+                    end = datetime(year=year, month=int(month) + 1, day=1)
                 else:
                     # Next month is next year. Roll over.
-                    end = datetime(year=year+1, month=1, day=1)
+                    end = datetime(year=year + 1, month=1, day=1)
 
-                for i in range((end-start).days):
+                for i in range((end - start).days):
                     date = end - timedelta(days=i)
 
                     if not pos:
@@ -265,13 +263,13 @@ def main(
             pdf.set_fill_color(color_weekend_bg)
 
             pdf.rect(
-                x+((210-2*x)/7)*week.index('saturday')+toolbar, y,
-                ((210-2*x)/7)*1, 149.12500-y,
+                x + ((210 - 2 * x) / 7) * week.index('saturday') + toolbar, y,
+                ((210 - 2 * x) / 7) * 1, 149.12500 - y,
                 style='F'
             )
             pdf.rect(
-                x+((210-2*x)/7)*week.index('sunday')+toolbar, y,
-                ((210-2*x)/7)*1, 149.12500-y,
+                x + ((210 - 2 * x) / 7) * week.index('sunday') + toolbar, y,
+                ((210 - 2 * x) / 7) * 1, 149.12500 - y,
                 style='F'
             )
 
@@ -634,7 +632,7 @@ def main(
             pdf.set_font_size(14)
             a += 1
 
-        d = (date_start + timedelta(days=i+1))
+        d = (date_start + timedelta(days=i + 1))
         m = d.strftime('%m')
         if b > 4 or not m == month:
             # No more rows or next day is a new month, skip to next month.
@@ -661,7 +659,7 @@ def main(
                     pdf.set_font_size(14)
 
                     # Temporary date var
-                    d = date_start + timedelta(days=i+n+1)
+                    d = date_start + timedelta(days=i + n + 1)
                     t = d.strftime('%d')
                     link = date_links.get(d.strftime('%F'), {})
                     link = link.get('daily', None)
@@ -747,7 +745,7 @@ def main(
         pdf.page = p + 1
         # Limit range of months to 12 since this is the
         # most we can fit in the side bar.
-        display_range = month_links[i: 12+i]
+        display_range = month_links[i: 12 + i]
         # VERY dumb fix for a bug where the font size
         # changes to the wrong value EVEN THOUGH I SET IT.
         # Somehow setting it to a different value makes the
@@ -786,7 +784,7 @@ def main(
 
         if any([
             len(month_links) <= 12,
-            len(month_links) == 12+i,
+            len(month_links) == 12 + i,
             p < 5,
         ]):
             pass
@@ -818,7 +816,7 @@ def main(
         month = date.strftime('%B')
         year_month = date.strftime('%Y-%m')
 
-        display_range = month_links[i: 12+i]
+        display_range = month_links[i: 12 + i]
 
         for d in range(len(display_range)):
             date, link = display_range[d]
@@ -860,7 +858,7 @@ def main(
             # previous month view links visible.
             if any([
                 len(month_links) <= 12,
-                len(month_links) == 12+i,
+                len(month_links) == 12 + i,
                 n < 5,
             ]):
                 pass
@@ -876,7 +874,7 @@ def main(
         pdf.page = p + section_start['habit']
         # Limit range of months to 12 since this is the
         # most we can fit in the side bar.
-        display_range = month_links[i: 12+i]
+        display_range = month_links[i: 12 + i]
         # VERY dumb fix for a bug where the font size
         # changes to the wrong value EVEN THOUGH I SET IT.
         # Somehow setting it to a different value makes the
@@ -915,7 +913,7 @@ def main(
 
         if any([
             len(month_links) <= 12,
-            len(month_links) == 12+i,
+            len(month_links) == 12 + i,
             p < 5,
         ]):
             pass
