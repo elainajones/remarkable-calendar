@@ -40,18 +40,18 @@ def main(
     color_event_bg = (205, 205, 205)
 
     # x, y for top right corner of grid
-    grid_start = (8.002, 22.62500)
+    grid_start = (8.002, 22.625)
 
     # x, y for separator line in header
-    daily_header_sep = (toolbar + 30.00166, 6.80812)
+    daily_header_sep = (toolbar + 30.002, 6.808)
     # x, y for daily day number (e.g. 31)
-    daily_day_num = (toolbar + 19.00169, 4.48600)
+    daily_day_num = (toolbar + 19.002, 4.486)
     # x, y for daily day name (e.g. Monday)
-    daily_day_name = (daily_header_sep[0] + 3, 6.91612)
+    daily_day_name = (daily_header_sep[0] + 3, 6.916)
     # x, y for daily month name (e.g. June)
-    daily_month_name = (daily_header_sep[0] + 3, 14.34300)
+    daily_month_name = (daily_header_sep[0] + 3, 14.343)
     # x, y for daily hour rulings (e.g. 01-23)
-    daily_hour_num = (toolbar + 13.50161, 15.624)
+    daily_hour_num = (toolbar + 13.502, 15.624)
     # x, y for event description.
     daily_day_event = (
         toolbar + grid_start[0] + (5.5 * 3.5),
@@ -59,13 +59,13 @@ def main(
     )
 
     # x, y for separator line in header
-    monthly_header_sep = (toolbar + 35.7142, 6.80812)
+    monthly_header_sep = (toolbar + 35.714, 6.808)
     # x, y for monthly month name (e.g. June)
-    monthly_month_name = (monthly_header_sep[0] + 4, 4.48600)
+    monthly_month_name = (monthly_header_sep[0] + 4, 4.486)
     # x, y for monthly month number (e.g. 06)
-    monthly_month_num = (monthly_header_sep[0] - 3, 6.91612)
+    monthly_month_num = (monthly_header_sep[0] - 3, 6.916)
     # x, y for year (e.g. 2024)
-    monthly_year = (monthly_header_sep[0] - 3, 14.34300)
+    monthly_year = (monthly_header_sep[0] - 3, 14.343)
     # x, y for monthly day number (e.g. 31)
     monthly_day_num = (toolbar + grid_start[0] + 3, grid_start[1] + 3)
     monthly_day_event = (toolbar + grid_start[0], grid_start[1] + 8)
@@ -264,12 +264,12 @@ def main(
 
             pdf.rect(
                 x + ((210 - 2 * x) / 7) * week.index('saturday') + toolbar, y,
-                ((210 - 2 * x) / 7) * 1, 149.12500 - y,
+                ((210 - 2 * x) / 7) * 1, 149.125 - y,
                 style='F'
             )
             pdf.rect(
                 x + ((210 - 2 * x) / 7) * week.index('sunday') + toolbar, y,
-                ((210 - 2 * x) / 7) * 1, 149.12500 - y,
+                ((210 - 2 * x) / 7) * 1, 149.125 - y,
                 style='F'
             )
 
@@ -708,9 +708,9 @@ def main(
                 # page width is 210mm (A4) and grid extends to 149.125mm
                 pdf.line(
                     x + toolbar,
-                    y + ((149.12500 - y) / 5) * n,
+                    y + ((149.125 - y) / 5) * n,
                     210 - x + toolbar,
-                    y + ((149.12500 - y) / 5) * n,
+                    y + ((149.125 - y) / 5) * n,
                 )
             # Vertical grid lines
             for n in range(8):
@@ -719,7 +719,7 @@ def main(
                     x + ((210 - 2 * x) / 7) * n + toolbar,
                     y,
                     x + ((210 - 2 * x) / 7) * n + toolbar,
-                    149.12500,
+                    149.125,
                 )
             x, y = monthly_day_num
             continue
