@@ -461,12 +461,13 @@ def main(
             pdf.set_font_size(42)
             pdf.set_text_color(color_text)
 
+            link = date_links[date.strftime('%F')]['monthly']
             text = date.strftime('%B')
             width = pdf.get_string_width(text)
 
             x, y = monthly_month_name
             pdf.set_xy(x, y + fix_font_y_pos[42])
-            pdf.cell(width, text=text, align='C')
+            pdf.cell(width, text=text, align='C', link=link)
 
             # Month number
             pdf.set_font_size(22)
@@ -552,7 +553,7 @@ def main(
                     pdf.set_font_size(8)
                     pdf.set_text_color(color_text_light)
                     for i in range(10):
-                        text = str(i).zfill(2)
+                        text = str(i + 1).zfill(2)
                         width = pdf.get_string_width(text)
 
                         pdf.set_xy(
@@ -608,6 +609,19 @@ def main(
             pdf.cell(width, text=text, align='C')
 
         date_links[date.strftime('%F')].update({'habit': link_id})
+
+    # last_month = None
+    # for i in range(date_days):
+    #     date = date_start + timedelta(days=i)
+    #     month = date.strftime('%B')
+    #     if last_month is None:
+    #         pdf.page = section_start['monthly']
+    #     if not last_month == month:
+    #         pdf.page += 1
+
+
+
+
 
     x, y = grid_start
     # page width is 210mm (A4) and grid extends to 149.125mm
@@ -1016,7 +1030,6 @@ def main(
             x, y = toolbar_links
             if month_links[p][0].strftime('%F') == date.strftime('%F'):
                 pdf.set_text_color(color_text)
-                link = None
             else:
                 pdf.set_text_color(color_text_light)
 
