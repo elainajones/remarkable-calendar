@@ -197,11 +197,13 @@ def main(
     ##################################################################
     # Init monthly view
     ##################################################################
+    month_list = []
     last_month = None
     for i in range(date_days):
         date = date_start + timedelta(days=i)
         month = date.strftime('%B')
         if not last_month == month:
+            month_list.append(date)
             # New month, make page.
             pdf.add_page()
 
@@ -423,202 +425,189 @@ def main(
     ##################################################################
     # Init habit tracker
     ##################################################################
-    last_month = None
-    for i in range(date_days):
-        date = date_start + timedelta(days=i)
+    for date in month_list:
         month = date.strftime('%B')
-        if not last_month == month:
-            month_days = []
-            d = date
-            while d.month == date.month:
-                month_days.append(d)
-                d = d + timedelta(days=1)
 
-            # New month, make page.
-            pdf.add_page()
+        month_days = []
+        d = date
+        while d.month == date.month:
+            month_days.append(d)
+            d = d + timedelta(days=1)
 
-            if not section_start.get('habit'):
-                section_start['habit'] = pdf.page
+        # New month, make page.
+        pdf.add_page()
 
-            link_id = pdf.add_link()
-            pdf.set_link(link_id)
-            last_month = month
+        if not section_start.get('habit'):
+            section_start['habit'] = pdf.page
 
-            # Separator line
+        link_id = pdf.add_link()
+        pdf.set_link(link_id)
+
+        # Separator line
+        pdf.set_draw_color(color_text)
+        pdf.set_line_width(0.5)
+
+        x, y = monthly_header_sep
+        # 13mm long
+        pdf.line(
+            x,
+            y,
+            x,
+            y + 13,
+        )
+
+        # Month name
+        pdf.set_font_size(42)
+        pdf.set_text_color(color_text)
+
+        link = date_links[date.strftime('%F')]['monthly']
+        text = date.strftime('%B')
+        width = pdf.get_string_width(text)
+
+        x, y = monthly_month_name
+        pdf.set_xy(x, y + fix_font_y_pos[42])
+        pdf.cell(width, text=text, align='C', link=link)
+
+        # Month number
+        pdf.set_font_size(22)
+        pdf.set_text_color(color_text)
+
+        text = date.strftime('%m')
+        width = pdf.get_string_width(text)
+
+        x, y = monthly_month_num
+        pdf.set_xy(x - width, y + fix_font_y_pos[22])
+        pdf.cell(width, text=text, align='C')
+
+        # Year
+        pdf.set_font_size(16)
+        pdf.set_text_color(color_text)
+
+        text = date.strftime('%Y')
+        width = pdf.get_string_width(text)
+
+        x, y = monthly_year
+        pdf.set_xy(x - width, y + fix_font_y_pos[16])
+        pdf.cell(width, text=text, align='C')
+
+        # Grid
+        pdf.set_draw_color(color_ruling)
+        pdf.set_line_width(0.25)
+        pdf.set_fill_color(color_weekend_bg)
+
+        # Horizontal grid lines
+        x, y = grid_start
+        pdf.set_line_width(0.25)
+        side = 5.347
+
+        pdf.rect(
+            x + toolbar, y,
+            side * 36, side * 2,
+            style='F'
+        )
+        pdf.rect(
+            x + toolbar + side * 31, y + side * 2,
+            side * 5, side * 16,
+            style='F'
+        )
+
+        # Piggy-back off hour position for day numbers
+        _, label_y = daily_hour_num
+        label_y += side * 9 + (side / 2)
+
+        # Make horizontal grid lines
+        for n in range(25):
             pdf.set_draw_color(color_text)
-            pdf.set_line_width(0.5)
-
-            x, y = monthly_header_sep
-            # 13mm long
-            pdf.line(
-                x,
-                y,
-                x,
-                y + 13,
-            )
-
-            # Month name
-            pdf.set_font_size(42)
-            pdf.set_text_color(color_text)
-
-            link = date_links[date.strftime('%F')]['monthly']
-            text = date.strftime('%B')
-            width = pdf.get_string_width(text)
-
-            x, y = monthly_month_name
-            pdf.set_xy(x, y + fix_font_y_pos[42])
-            pdf.cell(width, text=text, align='C', link=link)
-
-            # Month number
-            pdf.set_font_size(22)
-            pdf.set_text_color(color_text)
-
-            text = date.strftime('%m')
-            width = pdf.get_string_width(text)
-
-            x, y = monthly_month_num
-            pdf.set_xy(x - width, y + fix_font_y_pos[22])
-            pdf.cell(width, text=text, align='C')
-
-            # Year
-            pdf.set_font_size(16)
-            pdf.set_text_color(color_text)
-
-            text = date.strftime('%Y')
-            width = pdf.get_string_width(text)
-
-            x, y = monthly_year
-            pdf.set_xy(x - width, y + fix_font_y_pos[16])
-            pdf.cell(width, text=text, align='C')
-
-            # Grid
-            pdf.set_draw_color(color_ruling)
-            pdf.set_line_width(0.25)
-            pdf.set_fill_color(color_weekend_bg)
-
-            # Horizontal grid lines
-            x, y = grid_start
-            pdf.set_line_width(0.25)
-            side = 5.347
-
-            pdf.rect(
-                x + toolbar, y,
-                side * 36, side * 2,
-                style='F'
-            )
-            pdf.rect(
-                x + toolbar + side * 31, y + side * 2,
-                side * 5, side * 16,
-                style='F'
-            )
-
-            # Piggy-back off hour position for day numbers
-            _, label_y = daily_hour_num
-            label_y += side * 9 + (side / 2)
-
-            # Make horizontal grid lines
-            for n in range(25):
-                pdf.set_draw_color(color_text)
-                length = 36
-                if n == 1:
-                    continue
-                elif n > 8 and n < 18:
-                    pdf.set_draw_color(color_ruling)
-                    length -= 5
-                elif n == 18:
-                    continue
-                elif n > 18 and n < 24:
-                    pdf.set_draw_color(color_ruling)
-
-                pdf.line(
-                    x + toolbar,
-                    y + side * n,
-                    x + side * length + toolbar,
-                    y + side * n,
-                )
-
-            # Make vertical grid lines
-            for n in range(37):
-                pdf.set_draw_color(color_text)
-                length = 18
-                if n < 32 or n > 35:
-                    pdf.line(
-                        x + side * n + toolbar,
-                        y,
-                        x + side * n + toolbar,
-                        y + side * length,
-                    )
-
-                if n < 31:
-                    pdf.set_font_size(8)
-                    pdf.set_text_color(color_text_light)
-                    for i in range(10):
-                        text = str(i + 1).zfill(2)
-                        width = pdf.get_string_width(text)
-
-                        pdf.set_xy(
-                            x + side * n + toolbar + ((side - width) / 2),
-                            label_y + side * i + fix_font_y_pos[8],
-                        )
-                        # (i + 7)
-                        pdf.cell(width, text=text, align='C')
-
+            length = 36
+            if n == 1:
+                continue
+            elif n > 8 and n < 18:
                 pdf.set_draw_color(color_ruling)
-                if n == 0 or n == 36:
-                    pdf.set_draw_color(color_text)
-
-                pdf.line(
-                    x + side * n + toolbar,
-                    y + side * length,
-                    x + side * n + toolbar,
-                    y + side * (length + 6),
-                )
+                length -= 5
+            elif n == 18:
+                continue
+            elif n > 18 and n < 24:
+                pdf.set_draw_color(color_ruling)
 
             pdf.line(
                 x + toolbar,
-                y + side * 18,
-                x + side * 36 + toolbar,
-                y + side * 18,
+                y + side * n,
+                x + side * length + toolbar,
+                y + side * n,
             )
-            pdf.set_font_size(12)
-            pdf.set_text_color(color_text)
 
-            for i in range(len(month_days)):
-                date = month_days[i]
-                link = date_links[date.strftime('%F')]['daily']
-                text = str(date.day).zfill(2)
-                width = pdf.get_string_width(text)
-                align = (side - 5.29) / 2
+        # Make vertical grid lines
+        for n in range(37):
+            pdf.set_draw_color(color_text)
+            length = 18
+            if n < 32 or n > 35:
+                pdf.line(
+                    x + side * n + toolbar,
+                    y,
+                    x + side * n + toolbar,
+                    y + side * length,
+                )
 
-                new_x = x + toolbar + side * i + align
-                new_y = y + fix_font_y_pos[12] + (side / 2)
-                pdf.set_xy(new_x, new_y)
-                with pdf.rotation(
-                    90,
-                    new_x + (width / 2) + 0.3,
-                    new_y + 2,
-                ):
-                    pdf.cell(width, text=text, link=link, align='C')
+            if n < 31:
+                pdf.set_font_size(8)
+                pdf.set_text_color(color_text_light)
+                for i in range(10):
+                    text = str(i + 1).zfill(2)
+                    width = pdf.get_string_width(text)
 
-            text = 'Description'
+                    pdf.set_xy(
+                        x + side * n + toolbar + ((side - width) / 2),
+                        label_y + side * i + fix_font_y_pos[8],
+                    )
+                    # (i + 7)
+                    pdf.cell(width, text=text, align='C')
+
+            pdf.set_draw_color(color_ruling)
+            if n == 0 or n == 36:
+                pdf.set_draw_color(color_text)
+
+            pdf.line(
+                x + side * n + toolbar,
+                y + side * length,
+                x + side * n + toolbar,
+                y + side * (length + 6),
+            )
+
+        pdf.line(
+            x + toolbar,
+            y + side * 18,
+            x + side * 36 + toolbar,
+            y + side * 18,
+        )
+        pdf.set_font_size(12)
+        pdf.set_text_color(color_text)
+
+        for i in range(len(month_days)):
+            date = month_days[i]
+            link = date_links[date.strftime('%F')]['daily']
+            text = str(date.day).zfill(2)
             width = pdf.get_string_width(text)
-            pdf.set_xy(
-                x + toolbar + side * 33.5 - (width / 2),
-                y + side * 0.5 + fix_font_y_pos[12],
-            )
-            pdf.cell(width, text=text, align='C')
+            align = (side - 5.29) / 2
+
+            new_x = x + toolbar + side * i + align
+            new_y = y + fix_font_y_pos[12] + (side / 2)
+            pdf.set_xy(new_x, new_y)
+            with pdf.rotation(
+                90,
+                new_x + (width / 2) + 0.3,
+                new_y + 2,
+            ):
+                pdf.cell(width, text=text, link=link, align='C')
+
+        text = 'Description'
+        width = pdf.get_string_width(text)
+        pdf.set_xy(
+            x + toolbar + side * 33.5 - (width / 2),
+            y + side * 0.5 + fix_font_y_pos[12],
+        )
+        pdf.cell(width, text=text, align='C')
 
         date_links[date.strftime('%F')].update({'habit': link_id})
-
-    # last_month = None
-    # for i in range(date_days):
-    #     date = date_start + timedelta(days=i)
-    #     month = date.strftime('%B')
-    #     if last_month is None:
-    #         pdf.page = section_start['monthly']
-    #     if not last_month == month:
-    #         pdf.page += 1
-
 
     x, y = grid_start
     # page width is 210mm (A4) and grid extends to 149.125mm
