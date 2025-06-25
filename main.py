@@ -620,9 +620,6 @@ def main(
     #         pdf.page += 1
 
 
-
-
-
     x, y = grid_start
     # page width is 210mm (A4) and grid extends to 149.125mm
     x_off = (210 - 2 * x) / 7
@@ -633,8 +630,8 @@ def main(
     page = 0
     last_month = None
     # Add month numbers with links.
+    pdf.set_font_size(14)
     for i in range(date_days):
-        pdf.set_font_size(14)
         date = (date_start + timedelta(days=i))
         month = date.strftime('%m')
 
@@ -689,18 +686,16 @@ def main(
                     event_list = important_dates.get(event, [])
                     ex, ey = monthly_day_event
 
-                    pdf.set_font_size(10)
-
-                    # VERY dumb fix for a bug where the font size
-                    # changes to the wrong value EVEN THOUGH I SET IT.
-                    # Somehow setting it to a different value makes the
-                    # following change back actually persist.
-                    pdf.set_fill_color(color_page_bg)
-                    pdf.set_draw_color(color_page_bg)
-                    for event in event_list:
-                        # Embrace the recursion! (I know. It's bad)
+                    # Conditionally set font and color if we have events
+                    # to avoid weird behavior when we call this method
+                    # excessively.
+                    if event_list:
+                        pdf.set_font_size(10)
                         pdf.set_fill_color(color_event_bg)
                         pdf.set_draw_color(color_event_bg)
+
+                    for event in event_list:
+                        # Embrace the recursion! (I know. It's bad)
                         pdf.set_xy(
                             ex + (a - n) * x_off,
                             ey + fix_font_y_pos[10]
@@ -718,7 +713,13 @@ def main(
                             )
                         ey += 4.5
 
-                    pdf.set_font_size(14)
+                    # Conditionally restore font and color if we have
+                    # events to avoid weird behavior when we call this
+                    # method excessively.
+                    if event_list:
+                        pdf.set_font_size(14)
+                        pdf.set_fill_color(color_page_bg)
+                        pdf.set_draw_color(color_page_bg)
 
         if a > 0 and a % 7 == 0:
             # End of week, start new line.
@@ -739,17 +740,14 @@ def main(
             event_list = important_dates.get(event, [])
             ex, ey = monthly_day_event
 
-            pdf.set_font_size(10)
-
-            # VERY dumb fix for a bug where the font size
-            # changes to the wrong value EVEN THOUGH I SET IT.
-            # Somehow setting it to a different value makes the
-            # following change back actually persist.
-            pdf.set_fill_color(color_page_bg)
-            pdf.set_draw_color(color_page_bg)
-            for event in event_list:
-                pdf.set_draw_color(color_event_bg)
+            # Conditionally set font and color if we have events
+            # to avoid weird behavior when we call this method
+            # excessively.
+            if event_list:
+                pdf.set_font_size(10)
                 pdf.set_fill_color(color_event_bg)
+                pdf.set_draw_color(color_event_bg)
+            for event in event_list:
                 pdf.set_xy(
                     ex + (a * x_off),
                     ey + (b * y_off) + fix_font_y_pos[10]
@@ -766,9 +764,15 @@ def main(
                         border=1,
                     )
                 ey += 4.5
-
-            pdf.set_font_size(14)
             a += 1
+
+            # Conditionally restore font and color if we have
+            # events to avoid weird behavior when we call this
+            # method excessively.
+            if event_list:
+                pdf.set_font_size(14)
+                pdf.set_fill_color(color_page_bg)
+                pdf.set_draw_color(color_page_bg)
 
         d = (date_start + timedelta(days=i + 1))
         m = d.strftime('%m')
