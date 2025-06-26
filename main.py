@@ -603,11 +603,16 @@ def main(
     pdf.page = section_start['monthly']
     _, y = monthly_year
     x, _ = grid_start
-    pdf.set_font_size(16)
-    pdf.set_text_color(color_text_light)
-    text = 'Habits'
-    width = pdf.get_string_width(text)
+    # pdf.set_font_size(16)
+    # pdf.set_text_color(color_text_light)
+    # text = 'Habits'
+    # width = pdf.get_string_width(text)
     for date in month_list:
+        pdf.set_font_size(16)
+        pdf.set_text_color(color_text_light)
+        text = 'Habits'
+        width = pdf.get_string_width(text)
+
         link = date_links[date.strftime('%F')]['habit']
 
         pdf.set_xy(
@@ -617,22 +622,20 @@ def main(
         pdf.cell(width, text=text, link=link, align='C')
         pdf.page += 1
 
-    # VERY dumb fix for a bug where the font size
-    # changes to the wrong value EVEN THOUGH I SET IT.
-    # Somehow setting it to a different value makes the
-    # following change back actually persist.
-    pdf.set_font_size(14)
+    # pdf.set_font_size(14)
 
     _, y = daily_month_name
     x, _ = grid_start
     pdf.page = section_start['daily']
-    pdf.set_font_size(16)
-    pdf.set_text_color(color_text_light)
-    text = 'Habits'
-    width = pdf.get_string_width(text)
     for i in range(date_days):
         date = (date_start + timedelta(days=i))
         link = date_links[date.strftime('%F')]['habit']
+
+        # VERY dumb fix for a bug where the font size
+        # changes to the wrong value EVEN THOUGH I SET IT.
+        # Somehow setting it to a different value makes the
+        # following change back actually persist.
+        pdf.set_font_size(12)
 
         if i == 0:
             x_off = 0
@@ -641,6 +644,11 @@ def main(
             x_off = 0
         else:
             x_off = 100.497
+
+        pdf.set_font_size(16)
+        pdf.set_text_color(color_text_light)
+        text = 'Habits'
+        width = pdf.get_string_width(text)
 
         pdf.set_xy(
             x + x_off + toolbar + (5.5 * 15) - (width / 2),
