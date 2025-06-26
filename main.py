@@ -283,12 +283,7 @@ def main(
     # Init daily view
     ##################################################################
     for i in range(date_days):
-        if i == 0:
-            pdf.add_page()
-            link_id = pdf.add_link()
-            pdf.set_link(link_id)
-            x_off = 0
-        elif i % 2 == 0:
+        if i % 2 == 0:
             pdf.add_page()
             link_id = pdf.add_link()
             pdf.set_link(link_id)
@@ -426,22 +421,20 @@ def main(
     # Init habit tracker
     ##################################################################
     for date in month_list:
-        month = date.strftime('%B')
-
-        month_days = []
-        d = date
-        while d.month == date.month:
-            month_days.append(d)
-            d = d + timedelta(days=1)
-
         # New month, make page.
         pdf.add_page()
-
         if not section_start.get('habit'):
             section_start['habit'] = pdf.page
 
         link_id = pdf.add_link()
         pdf.set_link(link_id)
+
+        month_days = []
+        d = date
+        while d.month == date.month:
+            month_days.append(d)
+            date_links[d.strftime('%F')].update({'habit': link_id})
+            d = d + timedelta(days=1)
 
         # Separator line
         pdf.set_draw_color(color_text)
@@ -607,8 +600,6 @@ def main(
         )
         pdf.cell(width, text=text, align='C')
 
-        date_links[date.strftime('%F')].update({'habit': link_id})
-
     pdf.page = section_start['monthly']
     _, y = monthly_year
     x, _ = grid_start
@@ -621,11 +612,41 @@ def main(
 
         pdf.set_xy(
             x + ((210 - 2 * x) / 7) * 6.5 + toolbar - (width / 2),
-            y
+            y + fix_font_y_pos[16],
         )
         pdf.cell(width, text=text, link=link, align='C')
-
         pdf.page += 1
+
+    # VERY dumb fix for a bug where the font size
+    # changes to the wrong value EVEN THOUGH I SET IT.
+    # Somehow setting it to a different value makes the
+    # following change back actually persist.
+    pdf.set_font_size(14)
+
+    _, y = daily_month_name
+    x, _ = grid_start
+    pdf.page = section_start['daily']
+    pdf.set_font_size(16)
+    pdf.set_text_color(color_text_light)
+    text = 'Habits'
+    width = pdf.get_string_width(text)
+    for i in range(date_days):
+        date = (date_start + timedelta(days=i))
+        link = date_links[date.strftime('%F')]['habit']
+
+        if i == 0:
+            x_off = 0
+        elif i % 2 == 0:
+            pdf.page += 1
+            x_off = 0
+        else:
+            x_off = 100.497
+
+        pdf.set_xy(
+            x + x_off + toolbar + (5.5 * 15) - (width / 2),
+            y + fix_font_y_pos[16]
+        )
+        pdf.cell(width, text=text, link=link, align='C')
 
     ##################################################################
     # Monthly view day numbers
@@ -805,6 +826,10 @@ def main(
                     # Use lighter ruling color when filling in leftover
                     # spaces with preview of next month dates.
                     pdf.set_text_color(color_text_light)
+                    # VERY dumb fix for a bug where the font size
+                    # changes to the wrong value EVEN THOUGH I SET IT.
+                    # Somehow setting it to a different value makes the
+                    # following change back actually persist.
                     pdf.set_font_size(14)
 
                     # Temporary date var
@@ -817,10 +842,6 @@ def main(
                     pdf.cell(width, text=t, align='C', link=link)
 
                     pdf.set_font_size(10)
-                    # VERY dumb fix for a bug where the font size
-                    # changes to the wrong value EVEN THOUGH I SET IT.
-                    # Somehow setting it to a different value makes the
-                    # following change back actually persist.
                     pdf.set_fill_color(color_page_bg)
                     pdf.set_draw_color(color_page_bg)
                     event = d.strftime('%Y-%m-%d')
@@ -846,6 +867,13 @@ def main(
                             )
                         ey += 4.5
 
+                # VERY dumb fix for a bug where the font size
+                # changes to the wrong value EVEN THOUGH I SET IT.
+                # Somehow setting it to a different value makes the
+                # following change back actually persist.
+                #
+                # Somehow this breaks the monthly event font sizing when
+                # I remove it even though this doesn't need to be here.
                 pdf.set_font_size(14)
 
             # Horizontal grid lines
