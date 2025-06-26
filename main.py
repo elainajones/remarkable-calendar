@@ -717,10 +717,10 @@ def main(
                     # Conditionally set font and color if we have events
                     # to avoid weird behavior when we call this method
                     # excessively.
-                    if event_list:
-                        pdf.set_font_size(10)
-                        pdf.set_fill_color(color_event_bg)
-                        pdf.set_draw_color(color_event_bg)
+                    # if event_list:
+                    pdf.set_font_size(10)
+                    pdf.set_fill_color(color_event_bg)
+                    pdf.set_draw_color(color_event_bg)
 
                     for event in event_list:
                         # Embrace the recursion! (I know. It's bad)
@@ -744,10 +744,10 @@ def main(
                     # Conditionally restore font and color if we have
                     # events to avoid weird behavior when we call this
                     # method excessively.
-                    if event_list:
-                        pdf.set_font_size(14)
-                        pdf.set_fill_color(color_page_bg)
-                        pdf.set_draw_color(color_page_bg)
+                    # if event_list:
+                    pdf.set_font_size(14)
+                    pdf.set_fill_color(color_page_bg)
+                    pdf.set_draw_color(color_page_bg)
 
         if a > 0 and a % 7 == 0:
             # End of week, start new line.
@@ -771,10 +771,10 @@ def main(
             # Conditionally set font and color if we have events
             # to avoid weird behavior when we call this method
             # excessively.
-            if event_list:
-                pdf.set_font_size(10)
-                pdf.set_fill_color(color_event_bg)
-                pdf.set_draw_color(color_event_bg)
+            # if event_list:
+            pdf.set_font_size(10)
+            pdf.set_fill_color(color_event_bg)
+            pdf.set_draw_color(color_event_bg)
             for event in event_list:
                 pdf.set_xy(
                     ex + (a * x_off),
@@ -797,10 +797,10 @@ def main(
             # Conditionally restore font and color if we have
             # events to avoid weird behavior when we call this
             # method excessively.
-            if event_list:
-                pdf.set_font_size(14)
-                pdf.set_fill_color(color_page_bg)
-                pdf.set_draw_color(color_page_bg)
+            # if event_list:
+            pdf.set_font_size(14)
+            pdf.set_fill_color(color_page_bg)
+            pdf.set_draw_color(color_page_bg)
 
         d = (date_start + timedelta(days=i + 1))
         m = d.strftime('%m')
@@ -975,7 +975,6 @@ def main(
     n = 0
     page = pdf.page
     last_month = None
-    pdf.set_font_size(14)
     for p in range(0, date_days, 2):
         date = date_start + timedelta(days=p)
 
@@ -994,12 +993,18 @@ def main(
         year_month = date.strftime('%Y-%m')
 
         display_range = month_links[i: 12 + i]
+        # VERY dumb fix for a bug where the font size
+        # changes to the wrong value EVEN THOUGH I SET IT.
+        # Somehow setting it to a different value makes the
+        # following change back actually persist.
+        pdf.set_font_size(12)
 
         for d in range(len(display_range)):
             date, link = display_range[d]
-
             text = date.strftime('%B')
             text = text[:3]
+
+            pdf.set_font_size(14)
             width = pdf.get_string_width(text)
 
             x, y = toolbar_links
