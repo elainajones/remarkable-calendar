@@ -583,9 +583,9 @@ def main(
         pdf.set_text_color(color_text)
 
         for i in range(len(month_days)):
-            date = month_days[i]
-            link = date_links[date.strftime('%F')]['daily']
-            text = str(date.day).zfill(2)
+            d = month_days[i]
+            link = date_links[d.strftime('%F')]['daily']
+            text = str(d.day).zfill(2)
             width = pdf.get_string_width(text)
             align = (side - 5.29) / 2
 
@@ -609,16 +609,34 @@ def main(
 
         date_links[date.strftime('%F')].update({'habit': link_id})
 
-    x, y = grid_start
-    # page width is 210mm (A4) and grid extends to 149.125mm
-    x_off = (210 - 2 * x) / 7
-    y_off = (149.125 - y) / 5
+    pdf.page = section_start['monthly']
+    _, y = monthly_year
+    x, _ = grid_start
+    pdf.set_font_size(16)
+    pdf.set_text_color(color_text_light)
+    text = 'Habits'
+    width = pdf.get_string_width(text)
+    for date in month_list:
+        link = date_links[date.strftime('%F')]['habit']
 
+        pdf.set_xy(
+            x + ((210 - 2 * x) / 7) * 6.5 + toolbar - (width / 2),
+            y
+        )
+        pdf.cell(width, text=text, link=link, align='C')
+
+        pdf.page += 1
+
+    ##################################################################
+    # Monthly view day numbers
+    ##################################################################
+    # page width is 210mm (A4) and grid extends to 149.125mm
+    x_off = (210 - 2 * grid_start[0]) / 7
+    y_off = (149.125 - grid_start[1]) / 5
     x, y = monthly_day_num
 
     page = 0
     last_month = None
-    # Add month numbers with links.
     pdf.set_font_size(14)
     for i in range(date_days):
         date = (date_start + timedelta(days=i))
