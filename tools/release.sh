@@ -8,8 +8,6 @@ main() {
             "--start-date \"$((year_today+i))/01/01\" " \
             "--end-date \"$((year_today+i+1))/02/01\" " \
             "--hour-interval 6" \
-            "--toolbar-space right" \
-            "--enable-toolbar-links" \
             "--out $((year_today+i))_calendar.pdf"
         );
         python main.py ${args[@]};
@@ -21,8 +19,6 @@ main() {
             "--end-date \"$((year_today+i+1))/02/01\" " \
             "--week-start sunday " \
             "--hour-interval 6" \
-            "--toolbar-space right" \
-            "--enable-toolbar-links" \
             "--out $((year_today+i))_sunday_start_calendar.pdf"
         );
         python main.py ${args[@]};

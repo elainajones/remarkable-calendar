@@ -13,19 +13,15 @@ def main(
     hour_interval: int,
     save_path: str,
     week_start: str = 'monday',
-    handedness=None,
-    margin_links=False,
+    toolbar_pos="left",
     date_file=None,
 ) -> None:
-    if not handedness:
-        toolbar = 0
-    elif handedness.lower() == 'left':
+    if toolbar_pos.lower() == 'right':
         toolbar = -5
-        toolbar_links = (210 - 12, 15.624 - 5.5/2)
+        toolbar_links = (210 - 12, 15.624 - 5.5 / 2)
     else:
-        # Right handedness
         toolbar = 5
-        toolbar_links = (12, 15.624 - 5.5/2)
+        toolbar_links = (12, 15.624 - 5.5 / 2)
 
     # Text color (90% gray)
     color_text = (26, 26, 26)
@@ -44,18 +40,19 @@ def main(
     color_event_bg = (205, 205, 205)
 
     # x, y for top right corner of grid
-    grid_start = (8.002, 22.62500)
+    grid_start = (8.002, 22.625)
 
     # x, y for separator line in header
-    daily_header_sep = (toolbar + 30.00166, 6.80812)
+    daily_header_sep = (toolbar + 30.002, 6.808)
     # x, y for daily day number (e.g. 31)
-    daily_day_num = (toolbar + 19.00169, 4.48600)
+    daily_day_num = (toolbar + 19.002, 4.486)
     # x, y for daily day name (e.g. Monday)
-    daily_day_name = (daily_header_sep[0] + 3, 6.91612)
+    daily_day_name = (daily_header_sep[0] + 3, 6.916)
     # x, y for daily month name (e.g. June)
-    daily_month_name = (daily_header_sep[0] + 3, 14.34300)
+    daily_month_name = (daily_header_sep[0] + 3, 14.343)
     # x, y for daily hour rulings (e.g. 01-23)
-    daily_hour_num = (toolbar + 13.50161, 15.624)
+    daily_hour_num = (toolbar + 13.502, 15.624)
+    # input((((grid_start[1] - 15.624) / 14) * 12))
     # x, y for event description.
     daily_day_event = (
         toolbar + grid_start[0] + (5.5 * 3.5),
@@ -63,13 +60,13 @@ def main(
     )
 
     # x, y for separator line in header
-    monthly_header_sep = (toolbar + 35.7142, 6.80812)
+    monthly_header_sep = (toolbar + 35.714, 6.808)
     # x, y for monthly month name (e.g. June)
-    monthly_month_name = (monthly_header_sep[0] + 4, 4.48600)
+    monthly_month_name = (monthly_header_sep[0] + 4, 4.486)
     # x, y for monthly month number (e.g. 06)
-    monthly_month_num = (monthly_header_sep[0] - 3, 6.91612)
+    monthly_month_num = (monthly_header_sep[0] - 3, 6.916)
     # x, y for year (e.g. 2024)
-    monthly_year = (monthly_header_sep[0] - 3, 14.34300)
+    monthly_year = (monthly_header_sep[0] - 3, 14.343)
     # x, y for monthly day number (e.g. 31)
     monthly_day_num = (toolbar + grid_start[0] + 3, grid_start[1] + 3)
     monthly_day_event = (toolbar + grid_start[0], grid_start[1] + 8)
@@ -126,7 +123,7 @@ def main(
                 if not any([i.isdigit() for i in row]):
                     continue
 
-                r = [*row, *[None] * (7-len(row))]
+                r = [*row, *[None] * (7 - len(row))]
                 date_rows.append(r)
 
     # Define important dates based on the date rows.
@@ -136,8 +133,6 @@ def main(
     for row in date_rows:
         for year in range(date_start.year, date_end.year):
             month, day, week_num, week_day, pos = row[:5]
-            short_desc = row[5] or ''
-            long_desc = row[6] or ''
             # Can be positive or negative
             pos = pos and int(pos)
 
@@ -156,12 +151,12 @@ def main(
 
                 start = datetime(year=year, month=int(month), day=1)
                 if int(month) < 12:
-                    end = datetime(year=year, month=int(month)+1, day=1)
+                    end = datetime(year=year, month=int(month) + 1, day=1)
                 else:
                     # Next month is next year. Roll over.
-                    end = datetime(year=year+1, month=1, day=1)
+                    end = datetime(year=year + 1, month=1, day=1)
 
-                for i in range((end-start).days):
+                for i in range((end - start).days):
                     date = start + timedelta(days=i)
 
                     if not pos:
@@ -175,12 +170,12 @@ def main(
 
                 start = datetime(year=year, month=int(month), day=1)
                 if int(month) < 12:
-                    end = datetime(year=year, month=int(month)+1, day=1)
+                    end = datetime(year=year, month=int(month) + 1, day=1)
                 else:
                     # Next month is next year. Roll over.
-                    end = datetime(year=year+1, month=1, day=1)
+                    end = datetime(year=year + 1, month=1, day=1)
 
-                for i in range((end-start).days):
+                for i in range((end - start).days):
                     date = end - timedelta(days=i)
 
                     if not pos:
@@ -195,21 +190,25 @@ def main(
                 important_dates[key] = []
             important_dates[key].append((row[5], row[6]))
 
-    # eg: {'2024-10-27' : {'10': month_link, '27': day_link}}
+    # eg: {'2024-10-27' : {'monthly': month_link, 'daily': day_link}}
     date_links = {}
-    # eg: [('2024-10', link)]
-    month_links = []
+    section_start = {}
 
+    ##################################################################
+    # Init monthly view
+    ##################################################################
+    month_list = []
     last_month = None
-    link_id = None
-    # Iterate the days to make blank month pages. This also creates
-    # page links for the daily view.
     for i in range(date_days):
         date = date_start + timedelta(days=i)
         month = date.strftime('%B')
         if not last_month == month:
+            month_list.append(date)
             # New month, make page.
             pdf.add_page()
+
+            if not section_start.get('monthly'):
+                section_start['monthly'] = pdf.page
 
             link_id = pdf.add_link()
             pdf.set_link(link_id)
@@ -267,35 +266,33 @@ def main(
             pdf.set_fill_color(color_weekend_bg)
 
             pdf.rect(
-                x+((210-2*x)/7)*week.index('saturday')+toolbar, y,
-                ((210-2*x)/7)*1, 149.12500-y,
+                x + ((210 - 2 * x) / 7) * week.index('saturday') + toolbar, y,
+                ((210 - 2 * x) / 7) * 1, 149.125 - y,
                 style='F'
             )
             pdf.rect(
-                x+((210-2*x)/7)*week.index('sunday')+toolbar, y,
-                ((210-2*x)/7)*1, 149.12500-y,
+                x + ((210 - 2 * x) / 7) * week.index('sunday') + toolbar, y,
+                ((210 - 2 * x) / 7) * 1, 149.125 - y,
                 style='F'
             )
 
-            month_links.append((date, link_id))
+        date_links[date.strftime('%F')] = {'date': date}
+        date_links[date.strftime('%F')].update({'monthly': link_id})
 
-        date_links[date.strftime('%F')] = {}
-        date_links[date.strftime('%F')][month] = link_id
-
-    # Make daily view. This also makes page links for the monthly view.
+    ##################################################################
+    # Init daily view
+    ##################################################################
     for i in range(date_days):
-        if i == 0:
-            pdf.add_page()
-            link_id = pdf.add_link()
-            pdf.set_link(link_id)
-            x_off = 0
-        elif i % 2 == 0:
+        if i % 2 == 0:
             pdf.add_page()
             link_id = pdf.add_link()
             pdf.set_link(link_id)
             x_off = 0
         else:
             x_off = 100.497
+
+        if not section_start.get('daily'):
+            section_start['daily'] = pdf.page
 
         # Month day
         pdf.set_font_size(42)
@@ -305,7 +302,7 @@ def main(
         text = date.strftime('%d')
         width = pdf.get_string_width(text)
 
-        date_links[date.strftime('%F')][text] = link_id
+        date_links[date.strftime('%F')].update({'daily': link_id})
 
         x, y = daily_day_num
         pdf.set_xy((x + x_off) - (width / 2), y + fix_font_y_pos[42])
@@ -329,7 +326,7 @@ def main(
         text = date.strftime('%B')
         width = pdf.get_string_width(text)
 
-        link = date_links[date.strftime('%F')][text]
+        link = date_links[date.strftime('%F')]['monthly']
 
         x, y = daily_month_name
         pdf.set_xy((x + x_off), y + fix_font_y_pos[16])
@@ -420,18 +417,266 @@ def main(
                 pdf.cell(width, text=text, align='C', fill=True, border=0.5)
                 y += 5.5
 
-    x, y = grid_start
-    # page width is 210mm (A4) and grid extends to 149.125mm
-    x_off = (210 - 2 * x) / 7
-    y_off = (149.125 - y) / 5
+    ##################################################################
+    # Init habit tracker
+    ##################################################################
+    for date in month_list:
+        # New month, make page.
+        pdf.add_page()
+        if not section_start.get('habit'):
+            section_start['habit'] = pdf.page
 
+        link_id = pdf.add_link()
+        pdf.set_link(link_id)
+
+        month_days = []
+        d = date
+        while d.month == date.month:
+            month_days.append(d)
+            date_links[d.strftime('%F')].update({'habit': link_id})
+            d = d + timedelta(days=1)
+
+        # Separator line
+        pdf.set_draw_color(color_text)
+        pdf.set_line_width(0.5)
+
+        x, y = monthly_header_sep
+        # 13mm long
+        pdf.line(
+            x,
+            y,
+            x,
+            y + 13,
+        )
+
+        # Month name
+        pdf.set_font_size(42)
+        pdf.set_text_color(color_text)
+
+        link = date_links[date.strftime('%F')]['monthly']
+        text = date.strftime('%B')
+        width = pdf.get_string_width(text)
+
+        x, y = monthly_month_name
+        pdf.set_xy(x, y + fix_font_y_pos[42])
+        pdf.cell(width, text=text, align='C', link=link)
+
+        # Month number
+        pdf.set_font_size(22)
+        pdf.set_text_color(color_text)
+
+        text = date.strftime('%m')
+        width = pdf.get_string_width(text)
+
+        x, y = monthly_month_num
+        pdf.set_xy(x - width, y + fix_font_y_pos[22])
+        pdf.cell(width, text=text, align='C')
+
+        # Year
+        pdf.set_font_size(16)
+        pdf.set_text_color(color_text)
+
+        text = date.strftime('%Y')
+        width = pdf.get_string_width(text)
+
+        x, y = monthly_year
+        pdf.set_xy(x - width, y + fix_font_y_pos[16])
+        pdf.cell(width, text=text, align='C')
+
+        # Grid
+        pdf.set_draw_color(color_ruling)
+        pdf.set_line_width(0.25)
+        pdf.set_fill_color(color_weekend_bg)
+
+        # Horizontal grid lines
+        x, y = grid_start
+        pdf.set_line_width(0.25)
+        side = 5.347
+        vert_align = (side * 24) - (5.5 * 23)
+
+        pdf.rect(
+            x + toolbar, y,
+            side * 36, side * 2 - vert_align,
+            style='F'
+        )
+        pdf.rect(
+            x + toolbar + side * 31, y + side * 2 - vert_align,
+            side * 5, side * 16,
+            style='F'
+        )
+
+        # Piggy-back off hour position for habit numbers
+        _, label_y = daily_hour_num
+        label_y += side * 9 + (side / 2) - vert_align
+
+        # Make horizontal grid lines
+        for n in range(25):
+            pdf.set_draw_color(color_text)
+            length = 36
+            if n == 1:
+                y -= vert_align
+                continue
+            elif n > 8 and n < 18:
+                pdf.set_draw_color(color_ruling)
+                length -= 5
+            elif n == 18:
+                continue
+            elif n > 18 and n < 24:
+                pdf.set_draw_color(color_ruling)
+
+            pdf.line(
+                x + toolbar,
+                y + side * n,
+                x + side * length + toolbar,
+                y + side * n,
+            )
+
+        # Make vertical grid lines
+        x, y = grid_start
+        for n in range(37):
+            pdf.set_draw_color(color_text)
+            length = 18
+            if n < 32 or n > 35:
+                pdf.line(
+                    x + side * n + toolbar,
+                    y,
+                    x + side * n + toolbar,
+                    y + side * length - vert_align,
+                )
+
+            if n < 31:
+                pdf.set_font_size(8)
+                pdf.set_text_color(color_text_light)
+                for i in range(10):
+                    text = str(i + 1).zfill(2)
+                    width = pdf.get_string_width(text)
+
+                    pdf.set_xy(
+                        x + side * n + toolbar + ((side - width) / 2),
+                        label_y + side * i + fix_font_y_pos[8],
+                    )
+                    # (i + 7)
+                    pdf.cell(width, text=text, align='C')
+
+            pdf.set_draw_color(color_ruling)
+            if n == 0 or n == 36:
+                pdf.set_draw_color(color_text)
+
+            pdf.line(
+                x + side * n + toolbar,
+                y + side * length - vert_align,
+                x + side * n + toolbar,
+                y + side * (length + 6) - vert_align,
+            )
+
+        pdf.line(
+            x + toolbar,
+            y + side * 18 - vert_align,
+            x + side * 36 + toolbar,
+            y + side * 18 - vert_align,
+        )
+        pdf.set_font_size(12)
+        pdf.set_text_color(color_text)
+
+        x, y = grid_start
+        y -= (vert_align / 2)
+        for i in range(len(month_days)):
+            d = month_days[i]
+            link = date_links[d.strftime('%F')]['daily']
+            text = str(d.day).zfill(2)
+            width = pdf.get_string_width(text)
+
+            # 0.75 is arbitrary to center the text from
+            # guess-and-check.
+            new_x = x + toolbar + side * i + 0.75
+            new_y = y + fix_font_y_pos[12] + (side / 2)
+            pdf.set_xy(new_x, new_y)
+            # Add arbitrary 2.25 to the y value to center the text
+            # inside the link since the rotation apparently only
+            # affects the rendered text.
+            with pdf.rotation(
+                90,
+                new_x + (width / 2),
+                new_y + 2.25,
+            ):
+                pdf.cell(width, text=text, link=link, align='C')
+
+        text = 'Description'
+        width = pdf.get_string_width(text)
+        pdf.set_xy(
+            x + toolbar + side * 33.5 - (width / 2),
+            y + side * 0.5 + fix_font_y_pos[12],
+        )
+        pdf.cell(width, text=text, align='C')
+
+    pdf.page = section_start['monthly']
+    _, y = monthly_year
+    x, _ = grid_start
+    # pdf.set_font_size(16)
+    # pdf.set_text_color(color_text_light)
+    # text = 'Habits'
+    # width = pdf.get_string_width(text)
+    for date in month_list:
+        pdf.set_font_size(16)
+        pdf.set_text_color(color_text_light)
+        text = 'Habits'
+        width = pdf.get_string_width(text)
+
+        link = date_links[date.strftime('%F')]['habit']
+
+        pdf.set_xy(
+            x + ((210 - 2 * x) / 7) * 6.5 + toolbar - (width / 2),
+            y + fix_font_y_pos[16],
+        )
+        pdf.cell(width, text=text, link=link, align='C')
+        pdf.page += 1
+
+    # pdf.set_font_size(14)
+
+    _, y = daily_month_name
+    x, _ = grid_start
+    pdf.page = section_start['daily']
+    for i in range(date_days):
+        date = (date_start + timedelta(days=i))
+        link = date_links[date.strftime('%F')]['habit']
+
+        # VERY dumb fix for a bug where the font size
+        # changes to the wrong value EVEN THOUGH I SET IT.
+        # Somehow setting it to a different value makes the
+        # following change back actually persist.
+        pdf.set_font_size(12)
+
+        if i == 0:
+            x_off = 0
+        elif i % 2 == 0:
+            pdf.page += 1
+            x_off = 0
+        else:
+            x_off = 100.497
+
+        pdf.set_font_size(16)
+        pdf.set_text_color(color_text_light)
+        text = 'Habits'
+        width = pdf.get_string_width(text)
+
+        pdf.set_xy(
+            x + x_off + toolbar + (5.5 * 15) - (width / 2),
+            y + fix_font_y_pos[16]
+        )
+        pdf.cell(width, text=text, link=link, align='C')
+
+    ##################################################################
+    # Monthly view day numbers
+    ##################################################################
+    # page width is 210mm (A4) and grid extends to 149.125mm
+    x_off = (210 - 2 * grid_start[0]) / 7
+    y_off = (149.125 - grid_start[1]) / 5
     x, y = monthly_day_num
 
     page = 0
     last_month = None
-    # Add month numbers with links.
+    pdf.set_font_size(14)
     for i in range(date_days):
-        pdf.set_font_size(14)
         date = (date_start + timedelta(days=i))
         month = date.strftime('%m')
 
@@ -477,7 +722,7 @@ def main(
 
                     # Temporary date var (formatted)
                     d = (d - timedelta(days=n)).strftime('%F')
-                    link = date_links[d][t]
+                    link = date_links[d]['daily']
 
                     width = pdf.get_string_width(t)
                     pdf.cell(width, text=t, align='C', link=link)
@@ -486,18 +731,16 @@ def main(
                     event_list = important_dates.get(event, [])
                     ex, ey = monthly_day_event
 
+                    # Conditionally set font and color if we have events
+                    # to avoid weird behavior when we call this method
+                    # excessively.
+                    # if event_list:
                     pdf.set_font_size(10)
+                    pdf.set_fill_color(color_event_bg)
+                    pdf.set_draw_color(color_event_bg)
 
-                    # VERY dumb fix for a bug where the font size
-                    # changes to the wrong value EVEN THOUGH I SET IT.
-                    # Somehow setting it to a different value makes the
-                    # following change back actually persist.
-                    pdf.set_fill_color(color_page_bg)
-                    pdf.set_draw_color(color_page_bg)
                     for event in event_list:
                         # Embrace the recursion! (I know. It's bad)
-                        pdf.set_fill_color(color_event_bg)
-                        pdf.set_draw_color(color_event_bg)
                         pdf.set_xy(
                             ex + (a - n) * x_off,
                             ey + fix_font_y_pos[10]
@@ -515,7 +758,13 @@ def main(
                             )
                         ey += 4.5
 
+                    # Conditionally restore font and color if we have
+                    # events to avoid weird behavior when we call this
+                    # method excessively.
+                    # if event_list:
                     pdf.set_font_size(14)
+                    pdf.set_fill_color(color_page_bg)
+                    pdf.set_draw_color(color_page_bg)
 
         if a > 0 and a % 7 == 0:
             # End of week, start new line.
@@ -525,7 +774,7 @@ def main(
             pdf.set_text_color(color_text)
 
             text = date.strftime('%d')
-            link = date_links[date.strftime('%F')][text]
+            link = date_links[date.strftime('%F')]['daily']
 
             width = pdf.get_string_width(text)
             pdf.set_xy(x + (a * x_off), y + (b * y_off) + fix_font_y_pos[14])
@@ -536,17 +785,14 @@ def main(
             event_list = important_dates.get(event, [])
             ex, ey = monthly_day_event
 
+            # Conditionally set font and color if we have events
+            # to avoid weird behavior when we call this method
+            # excessively.
+            # if event_list:
             pdf.set_font_size(10)
-
-            # VERY dumb fix for a bug where the font size
-            # changes to the wrong value EVEN THOUGH I SET IT.
-            # Somehow setting it to a different value makes the
-            # following change back actually persist.
-            pdf.set_fill_color(color_page_bg)
-            pdf.set_draw_color(color_page_bg)
+            pdf.set_fill_color(color_event_bg)
+            pdf.set_draw_color(color_event_bg)
             for event in event_list:
-                pdf.set_draw_color(color_event_bg)
-                pdf.set_fill_color(color_event_bg)
                 pdf.set_xy(
                     ex + (a * x_off),
                     ey + (b * y_off) + fix_font_y_pos[10]
@@ -563,11 +809,17 @@ def main(
                         border=1,
                     )
                 ey += 4.5
-
-            pdf.set_font_size(14)
             a += 1
 
-        d = (date_start + timedelta(days=i+1))
+            # Conditionally restore font and color if we have
+            # events to avoid weird behavior when we call this
+            # method excessively.
+            # if event_list:
+            pdf.set_font_size(14)
+            pdf.set_fill_color(color_page_bg)
+            pdf.set_draw_color(color_page_bg)
+
+        d = (date_start + timedelta(days=i + 1))
         m = d.strftime('%m')
         if b > 4 or not m == month:
             # No more rows or next day is a new month, skip to next month.
@@ -591,22 +843,22 @@ def main(
                     # Use lighter ruling color when filling in leftover
                     # spaces with preview of next month dates.
                     pdf.set_text_color(color_text_light)
+                    # VERY dumb fix for a bug where the font size
+                    # changes to the wrong value EVEN THOUGH I SET IT.
+                    # Somehow setting it to a different value makes the
+                    # following change back actually persist.
                     pdf.set_font_size(14)
 
                     # Temporary date var
-                    d = date_start + timedelta(days=i+n+1)
+                    d = date_start + timedelta(days=i + n + 1)
                     t = d.strftime('%d')
                     link = date_links.get(d.strftime('%F'), {})
-                    link = link.get(t, None)
+                    link = link.get('daily', None)
 
                     width = pdf.get_string_width(t)
                     pdf.cell(width, text=t, align='C', link=link)
 
                     pdf.set_font_size(10)
-                    # VERY dumb fix for a bug where the font size
-                    # changes to the wrong value EVEN THOUGH I SET IT.
-                    # Somehow setting it to a different value makes the
-                    # following change back actually persist.
                     pdf.set_fill_color(color_page_bg)
                     pdf.set_draw_color(color_page_bg)
                     event = d.strftime('%Y-%m-%d')
@@ -632,6 +884,13 @@ def main(
                             )
                         ey += 4.5
 
+                # VERY dumb fix for a bug where the font size
+                # changes to the wrong value EVEN THOUGH I SET IT.
+                # Somehow setting it to a different value makes the
+                # following change back actually persist.
+                #
+                # Somehow this breaks the monthly event font sizing when
+                # I remove it even though this doesn't need to be here.
                 pdf.set_font_size(14)
 
             # Horizontal grid lines
@@ -643,9 +902,9 @@ def main(
                 # page width is 210mm (A4) and grid extends to 149.125mm
                 pdf.line(
                     x + toolbar,
-                    y + ((149.12500 - y) / 5) * n,
+                    y + ((149.125 - y) / 5) * n,
                     210 - x + toolbar,
-                    y + ((149.12500 - y) / 5) * n,
+                    y + ((149.125 - y) / 5) * n,
                 )
             # Vertical grid lines
             for n in range(8):
@@ -654,128 +913,210 @@ def main(
                     x + ((210 - 2 * x) / 7) * n + toolbar,
                     y,
                     x + ((210 - 2 * x) / 7) * n + toolbar,
-                    149.12500,
+                    149.125,
                 )
             x, y = monthly_day_num
             continue
 
-    if margin_links and toolbar:
-        i = 0
-        for p in range(len(month_links)):
-            pdf.page = p + 1
-            # Limit range of months to 12 since this is the
-            # most we can fit in the side bar.
-            display_range = month_links[i: 12+i]
-            # VERY dumb fix for a bug where the font size
-            # changes to the wrong value EVEN THOUGH I SET IT.
-            # Somehow setting it to a different value makes the
-            # following change back actually persist.
-            pdf.set_font_size(12)
+    ##################################################################
+    # Month links (monthly)
+    ##################################################################
+    key_list = list(date_links.keys())
+    key_list.sort()
 
-            for d in range(len(display_range)):
-                date, link = display_range[d]
-                text = date.strftime('%B')
-                text = text[:3]
+    link = None
+    month_links = []
+    for i in key_list:
+        val = date_links[i]
+        if not val.get('monthly'):
+            continue
+        elif val['monthly'] != link:
+            link = val['monthly']
+            month_links.append((val['date'], val['monthly']))
 
-                pdf.set_font_size(14)
-                width = pdf.get_string_width(text)
+    i = 0
+    for p in range(len(month_links)):
+        pdf.page = p + 1
+        # Limit range of months to 12 since this is the
+        # most we can fit in the side bar.
+        display_range = month_links[i: 12 + i]
+        # VERY dumb fix for a bug where the font size
+        # changes to the wrong value EVEN THOUGH I SET IT.
+        # Somehow setting it to a different value makes the
+        # following change back actually persist.
+        pdf.set_font_size(12)
 
-                x, y = toolbar_links
-                if month_links[p][0].strftime('%F') == date.strftime('%F'):
-                    pdf.set_text_color(color_text)
-                    link = None
-                else:
-                    pdf.set_text_color(color_text_light)
+        for d in range(len(display_range)):
+            date, link = display_range[d]
+            text = date.strftime('%B')
+            text = text[:3]
 
-                if toolbar > 0:
-                    # Right handed
-                    pdf.set_xy(
-                        x - width - 1.5,
-                        y + ((5.5 * 2) * (d + 1)) + fix_font_y_pos[14]
-                    )
-                else:
-                    # Left handed
-                    pdf.set_xy(
-                        x + 1.5,
-                        y + ((5.5 * 2) * (d + 1)) + fix_font_y_pos[14]
-                    )
+            pdf.set_font_size(14)
+            width = pdf.get_string_width(text)
 
-                pdf.cell(width, text=text, align='C', link=link)
+            x, y = toolbar_links
+            if month_links[p][0].strftime('%F') == date.strftime('%F'):
+                pdf.set_text_color(color_text)
+                link = None
+            else:
+                pdf.set_text_color(color_text_light)
 
+            if toolbar > 0:
+                # Right handed
+                pdf.set_xy(
+                    x - width - 1.5,
+                    y + ((5.5 * 2) * (d + 1)) + fix_font_y_pos[14]
+                )
+            else:
+                # Left handed
+                pdf.set_xy(
+                    x + 1.5,
+                    y + ((5.5 * 2) * (d + 1)) + fix_font_y_pos[14]
+                )
+
+            pdf.cell(width, text=text, align='C', link=link)
+
+        if any([
+            len(month_links) <= 12,
+            len(month_links) == 12 + i,
+            p < 5,
+        ]):
+            pass
+        else:
+            i += 1
+
+    ##################################################################
+    # Month links (daily)
+    ##################################################################
+    i = 0
+    n = 0
+    page = pdf.page
+    last_month = None
+    for p in range(0, date_days, 2):
+        date = date_start + timedelta(days=p)
+
+        if p == 0:
+            date = date + timedelta(days=1)
+            page += 1
+        elif p % 2 == 0:
+            date = date + timedelta(days=1)
+            page += 1
+        else:
+            continue
+
+        pdf.page = page
+
+        month = date.strftime('%B')
+        year_month = date.strftime('%Y-%m')
+
+        display_range = month_links[i: 12 + i]
+        # VERY dumb fix for a bug where the font size
+        # changes to the wrong value EVEN THOUGH I SET IT.
+        # Somehow setting it to a different value makes the
+        # following change back actually persist.
+        pdf.set_font_size(12)
+
+        for d in range(len(display_range)):
+            date, link = display_range[d]
+            text = date.strftime('%B')
+            text = text[:3]
+
+            pdf.set_font_size(14)
+            width = pdf.get_string_width(text)
+
+            x, y = toolbar_links
+            if all([
+                year_month == date.strftime('%Y-%m'),
+            ]):
+                pdf.set_text_color(color_text)
+            else:
+                pdf.set_text_color(color_text_light)
+
+            if toolbar > 0:
+                # Right handed
+                pdf.set_xy(
+                    x - width - 1.5,
+                    y + ((5.5 * 2) * (d + 1)) + fix_font_y_pos[14]
+                )
+            else:
+                # Left handed
+                pdf.set_xy(
+                    x + 1.5,
+                    y + ((5.5 * 2) * (d + 1)) + fix_font_y_pos[14]
+                )
+
+            pdf.cell(width, text=text, align='C', link=link)
+
+        if not last_month == month:
+            last_month = month
+            # Don't shift the "display window" if our date range is
+            # less than 12 since it fits perfectly, if we've reached the
+            # end, or if we've not gone forward enough to justify it.
+            # Rather than shift at the end of every month, we shift only
+            # if we've crossed the halfway point to keep next and
+            # previous month view links visible.
             if any([
                 len(month_links) <= 12,
-                len(month_links) == 12+i,
-                p < 5,
+                len(month_links) == 12 + i,
+                n < 5,
             ]):
                 pass
             else:
                 i += 1
+            n += 1
 
-        i = 0
-        n = 0
-        page = pdf.page
-        last_month = None
-        pdf.set_font_size(14)
-        for p in range(0, date_days, 2):
-            date = date_start + timedelta(days=p)
+    ##################################################################
+    # Month links (habit)
+    ##################################################################
+    i = 0
+    for p in range(len(month_links)):
+        pdf.page = p + section_start['habit']
+        # Limit range of months to 12 since this is the
+        # most we can fit in the side bar.
+        display_range = month_links[i: 12 + i]
+        # VERY dumb fix for a bug where the font size
+        # changes to the wrong value EVEN THOUGH I SET IT.
+        # Somehow setting it to a different value makes the
+        # following change back actually persist.
+        pdf.set_font_size(12)
 
-            if p == 0:
-                date = date + timedelta(days=1)
-                page += 1
-            elif p % 2 == 0:
-                date = date + timedelta(days=1)
-                page += 1
+        for d in range(len(display_range)):
+            date, link = display_range[d]
+            text = date.strftime('%B')
+            text = text[:3]
+
+            pdf.set_font_size(14)
+            width = pdf.get_string_width(text)
+
+            x, y = toolbar_links
+            if month_links[p][0].strftime('%F') == date.strftime('%F'):
+                pdf.set_text_color(color_text)
             else:
-                continue
+                pdf.set_text_color(color_text_light)
 
-            pdf.page = page
+            if toolbar > 0:
+                # Right handed
+                pdf.set_xy(
+                    x - width - 1.5,
+                    y + ((5.5 * 2) * (d + 1)) + fix_font_y_pos[14]
+                )
+            else:
+                # Left handed
+                pdf.set_xy(
+                    x + 1.5,
+                    y + ((5.5 * 2) * (d + 1)) + fix_font_y_pos[14]
+                )
 
-            month = date.strftime('%B')
-            year_month = date.strftime('%Y-%m')
+            pdf.cell(width, text=text, align='C', link=link)
 
-            display_range = month_links[i: 12+i]
-
-            for d in range(len(display_range)):
-                date, link = display_range[d]
-
-                text = date.strftime('%B')
-                text = text[:3]
-                width = pdf.get_string_width(text)
-
-                x, y = toolbar_links
-                if all([
-                    year_month == date.strftime('%Y-%m'),
-                ]):
-                    pdf.set_text_color(color_text)
-                else:
-                    pdf.set_text_color(color_text_light)
-
-                if toolbar > 0:
-                    # Right handed
-                    pdf.set_xy(
-                        x - width - 1.5,
-                        y + ((5.5 * 2) * (d + 1)) + fix_font_y_pos[14]
-                    )
-                else:
-                    # Left handed
-                    pdf.set_xy(
-                        x + 1.5,
-                        y + ((5.5 * 2) * (d + 1)) + fix_font_y_pos[14]
-                    )
-
-                pdf.cell(width, text=text, align='C', link=link)
-
-            if not last_month == month:
-                last_month = month
-                if any([
-                    len(month_links) <= 12,
-                    len(month_links) == 12+i,
-                    n < 5,
-                ]):
-                    pass
-                else:
-                    i += 1
-                n += 1
+        if any([
+            len(month_links) <= 12,
+            len(month_links) == 12 + i,
+            p < 5,
+        ]):
+            pass
+        else:
+            i += 1
 
     # Save
     pdf.output(save_path)
@@ -808,8 +1149,8 @@ if __name__ == '__main__':
         choices=range(1, 24)
     )
     parser.add_argument(
-        '--toolbar-space',
-        default=False,
+        '--toolbar-position',
+        default='left',
         choices=['left', 'right']
     )
     parser.add_argument(
@@ -825,11 +1166,6 @@ if __name__ == '__main__':
             'sunday',
         ]
     )
-    parser.add_argument(
-        '--enable-toolbar-links',
-        help='Only takes effect when combined with --toolbar-space',
-        action='store_true',
-    )
     parser.add_argument('--out', default=save_path)
     parser.add_argument('--date-file', default=date_file)
 
@@ -839,8 +1175,7 @@ if __name__ == '__main__':
     end_date = dateparser.parse(args.end_date)
     hour_interval = args.hour_interval
     week_start = args.week_start
-    handedness = args.toolbar_space
-    margin_links = args.enable_toolbar_links
+    toolbar_pos = args.toolbar_position
     date_file = args.date_file
     save_path = args.out
 
@@ -850,7 +1185,6 @@ if __name__ == '__main__':
         hour_interval,
         save_path,
         week_start,
-        handedness,
-        margin_links,
+        toolbar_pos,
         date_file,
     )
