@@ -580,15 +580,19 @@ def main(
             link = date_links[d.strftime('%F')]['daily']
             text = str(d.day).zfill(2)
             width = pdf.get_string_width(text)
-            align = (side - 5.29) / 2
 
-            new_x = x + toolbar + side * i + align
+            # 0.75 is arbitrary to center the text from
+            # guess-and-check.
+            new_x = x + toolbar + side * i + 0.75
             new_y = y + fix_font_y_pos[12] + (side / 2)
             pdf.set_xy(new_x, new_y)
+            # Add arbitrary 2.25 to the y value to center the text
+            # inside the link since the rotation apparently only
+            # affects the rendered text.
             with pdf.rotation(
                 90,
-                new_x + (width / 2) + 0.3,
-                new_y + 2,
+                new_x + (width / 2),
+                new_y + 2.25,
             ):
                 pdf.cell(width, text=text, link=link, align='C')
 
