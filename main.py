@@ -492,27 +492,29 @@ def main(
         x, y = grid_start
         pdf.set_line_width(0.25)
         side = 5.347
+        vert_align = (side * 24) - (5.5 * 23)
 
         pdf.rect(
             x + toolbar, y,
-            side * 36, side * 2,
+            side * 36, side * 2 - vert_align,
             style='F'
         )
         pdf.rect(
-            x + toolbar + side * 31, y + side * 2,
+            x + toolbar + side * 31, y + side * 2 - vert_align,
             side * 5, side * 16,
             style='F'
         )
 
-        # Piggy-back off hour position for day numbers
+        # Piggy-back off hour position for habit numbers
         _, label_y = daily_hour_num
-        label_y += side * 9 + (side / 2)
+        label_y += side * 9 + (side / 2) - vert_align
 
         # Make horizontal grid lines
         for n in range(25):
             pdf.set_draw_color(color_text)
             length = 36
             if n == 1:
+                y -= vert_align
                 continue
             elif n > 8 and n < 18:
                 pdf.set_draw_color(color_ruling)
@@ -530,6 +532,7 @@ def main(
             )
 
         # Make vertical grid lines
+        x, y = grid_start
         for n in range(37):
             pdf.set_draw_color(color_text)
             length = 18
@@ -538,7 +541,7 @@ def main(
                     x + side * n + toolbar,
                     y,
                     x + side * n + toolbar,
-                    y + side * length,
+                    y + side * length - vert_align,
                 )
 
             if n < 31:
@@ -561,20 +564,22 @@ def main(
 
             pdf.line(
                 x + side * n + toolbar,
-                y + side * length,
+                y + side * length - vert_align,
                 x + side * n + toolbar,
-                y + side * (length + 6),
+                y + side * (length + 6) - vert_align,
             )
 
         pdf.line(
             x + toolbar,
-            y + side * 18,
+            y + side * 18 - vert_align,
             x + side * 36 + toolbar,
-            y + side * 18,
+            y + side * 18 - vert_align,
         )
         pdf.set_font_size(12)
         pdf.set_text_color(color_text)
 
+        x, y = grid_start
+        y -= (vert_align / 2)
         for i in range(len(month_days)):
             d = month_days[i]
             link = date_links[d.strftime('%F')]['daily']
