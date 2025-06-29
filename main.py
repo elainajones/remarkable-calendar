@@ -491,7 +491,13 @@ def main(
         # Horizontal grid lines
         x, y = grid_start
         pdf.set_line_width(0.25)
-        side = 5.347
+        # Use a smaller grid box size for the habit tracker to provide
+        # a bit more space for descriptions. The day view page isn't exactly
+        # 5.5 * 35 so we can't scale that for the habit tracker boxes. The
+        # actual width of the daily grid is 193.996mm so the habit tracker
+        # using a 36 x 18 grid means each box side needs to be 5.389mm to
+        # be consistent with the other page widths.
+        side = 5.389
         vert_align = (side * 24) - (5.5 * 23)
 
         pdf.rect(
