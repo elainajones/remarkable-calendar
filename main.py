@@ -611,7 +611,7 @@ def main(
         width = pdf.get_string_width(text)
         pdf.set_xy(
             x + toolbar + side * 33.5 - (width / 2),
-            y + side * 0.5 + fix_font_y_pos[12],
+            y + (side * 0.5 + vert_align) / 2 + fix_font_y_pos[12],
         )
         pdf.cell(width, text=text, align='C')
 
