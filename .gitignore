@@ -4,4 +4,6 @@ __pycache__/
 *.pkl
 *.swp
 *.pdf
+.pyinstaller/*
+build/*
 
