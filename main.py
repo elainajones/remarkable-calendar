@@ -1,10 +1,15 @@
-import os
-import csv
 import argparse
+import csv
 from datetime import datetime, timedelta
+import logging
+import os
+import sys
 
 import dateparser
 from fpdf import FPDF
+
+# Suppress benign warnings
+logging.getLogger('fontTools.subset').level = logging.ERROR
 
 
 def main(
@@ -1126,14 +1131,21 @@ def main(
 
     # Save
     pdf.output(save_path)
+    print(f'Saved to {save_path}')
 
 
 if __name__ == '__main__':
     # Set default interval as string.
     start_date = f'{datetime.today().year}-01-01'
     end_date = f'{datetime.today().year + 1}-02-01'
-    # Should be fine for most cases.
-    script_path = os.path.realpath(__file__)
+
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        # Pyinstaller executable path
+        script_path = sys.executable
+    else:
+        # Normal Python usage.
+        script_path = os.path.realpath(__file__)
+
     save_path = os.path.join(
         os.path.dirname(script_path),
         'calendar.pdf'
