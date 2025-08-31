@@ -1,6 +1,7 @@
 import argparse
 import csv
 from datetime import datetime, timedelta
+from dateutil.easter import easter, EASTER_ORTHODOX, EASTER_WESTERN
 import logging
 import os
 import sys
@@ -10,6 +11,116 @@ from fpdf import FPDF
 
 # Suppress benign warnings
 logging.getLogger('fontTools.subset').level = logging.ERROR
+
+
+def get_important_dates(
+    date_file,
+    start_year,
+    end_year
+):
+    """Process important dates from dates.csv
+
+    Args:
+        date_file (str): Path to 'dates.csv'
+        start_year (int): Start year for the date range.
+        end_year (int): End year for the date range.
+
+    Returns:
+        Dictionary with 'yyyy-mm-dd' keys and (long description,
+        short description) tuple values for all dates in the range.
+    """
+    # Unpack the rows from the date file.
+    date_rows = []
+    if os.path.exists(date_file):
+        with open(date_file, 'r') as f:
+            reader = csv.reader(f, delimiter=',')
+            for row in reader:
+                # Make sure we get valid data in the rows.
+                if not any([i.isdigit() for i in row]):
+                    continue
+
+                r = [*row, *[None] * (7 - len(row))]
+                date_rows.append(r)
+
+    # Define important dates based on the date rows.
+    # Actual dates of non-fixed important dates (such as 2nd Sunday
+    # in May for Mother's Day, etc) will be determined here.
+    important_dates = {}
+    for row in date_rows:
+        for year in range(start_year, end_year):
+            month, day, week_num, week_day, pos = row[:5]
+            # Can be positive or negative
+            pos = pos and int(pos)
+
+            key = None
+            # Special case for Easter due to the complex nature this
+            # holiday is calculated. Only use the internal easter()
+            # function if month or day (etc) have not been provided in
+            # dates.csv to respect explicit setting of this date.
+            if row[5].lower().strip() == 'easter' and not any([
+                month,
+                day,
+            ]):
+                method_constants = {
+                    1: EASTER_ORTHODOX,
+                    2: EASTER_WESTERN,
+                }
+                method = method_constants.get(pos, EASTER_WESTERN)
+                key = easter(year, method=method).strftime('%Y-%m-%d')
+            elif not month:
+                continue
+            elif day:
+                key = '-'.join([
+                    str(year).zfill(4),
+                    month.zfill(2),
+                    day.zfill(2),
+                ])
+            # Positive positions (e.g. 2nd Sunday of May)
+            elif week_day and isinstance(pos, int) and pos > 0:
+                week_day = week_day.lower()
+
+                start = datetime(year=year, month=int(month), day=1)
+                if int(month) < 12:
+                    end = datetime(year=year, month=int(month) + 1, day=1)
+                else:
+                    # Next month is next year. Roll over.
+                    end = datetime(year=year + 1, month=1, day=1)
+
+                for i in range((end - start).days):
+                    date = start + timedelta(days=i)
+
+                    if not pos:
+                        break
+                    elif date.strftime('%A').lower() == week_day:
+                        key = date.strftime('%Y-%m-%d')
+                        pos -= 1
+            # Negative positions (e.g. Last Monday of May)
+            elif week_day and isinstance(pos, int) and pos < 0:
+                week_day = week_day.lower()
+
+                start = datetime(year=year, month=int(month), day=1)
+                if int(month) < 12:
+                    end = datetime(year=year, month=int(month) + 1, day=1)
+                else:
+                    # Next month is next year. Roll over.
+                    end = datetime(year=year + 1, month=1, day=1)
+
+                for i in range((end - start).days):
+                    date = end - timedelta(days=i)
+
+                    if not pos:
+                        break
+                    elif date.strftime('%A').lower() == week_day:
+                        key = date.strftime('%Y-%m-%d')
+                        pos += 1
+
+            if not key:
+                continue
+            elif not important_dates.get(key):
+                important_dates[key] = []
+            important_dates[key].append((row[5], row[6]))
+
+    return important_dates
 
 
 def main(
@@ -119,82 +230,11 @@ def main(
     pdf.add_font(family=font_family, style=font_style, fname=font_file)
     pdf.set_font(font_family, font_style, 42)
 
-    # Unpack the rows from the date file.
-    date_rows = []
-    if os.path.exists(date_file):
-        with open(date_file, 'r') as f:
-            reader = csv.reader(f, delimiter=',')
-            for row in reader:
-                if not any([i.isdigit() for i in row]):
-                    continue
-
-                r = [*row, *[None] * (7 - len(row))]
-                date_rows.append(r)
-
-    # Define important dates based on the date rows.
-    # Actual dates of non-fixed important dates (such as 2nd Sunday
-    # in May for Mother's Day, etc) will be determined here.
-    important_dates = {}
-    for row in date_rows:
-        for year in range(date_start.year, date_end.year):
-            month, day, week_num, week_day, pos = row[:5]
-            # Can be positive or negative
-            pos = pos and int(pos)
-
-            key = None
-            if not month:
-                continue
-            elif day:
-                key = '-'.join([
-                    str(year).zfill(4),
-                    month.zfill(2),
-                    day.zfill(2),
-                ])
-            # Positive positions (e.g. 2nd Sunday of May)
-            elif week_day and isinstance(pos, int) and pos > 0:
-                week_day = week_day.lower()
-
-                start = datetime(year=year, month=int(month), day=1)
-                if int(month) < 12:
-                    end = datetime(year=year, month=int(month) + 1, day=1)
-                else:
-                    # Next month is next year. Roll over.
-                    end = datetime(year=year + 1, month=1, day=1)
-
-                for i in range((end - start).days):
-                    date = start + timedelta(days=i)
-
-                    if not pos:
-                        break
-                    elif date.strftime('%A').lower() == week_day:
-                        key = date.strftime('%Y-%m-%d')
-                        pos -= 1
-            # Negative positions (e.g. Last Monday of May)
-            elif week_day and isinstance(pos, int) and pos < 0:
-                week_day = week_day.lower()
-
-                start = datetime(year=year, month=int(month), day=1)
-                if int(month) < 12:
-                    end = datetime(year=year, month=int(month) + 1, day=1)
-                else:
-                    # Next month is next year. Roll over.
-                    end = datetime(year=year + 1, month=1, day=1)
-
-                for i in range((end - start).days):
-                    date = end - timedelta(days=i)
-
-                    if not pos:
-                        break
-                    elif date.strftime('%A').lower() == week_day:
-                        key = date.strftime('%Y-%m-%d')
-                        pos += 1
-
-            if not key:
-                continue
-            elif not important_dates.get(key):
-                important_dates[key] = []
-            important_dates[key].append((row[5], row[6]))
-
+    important_dates = get_important_dates(
+        date_file,
+        date_start.year,
+        date_end.year,
+    )
     # eg: {'2024-10-27' : {'monthly': month_link, 'daily': day_link}}
     date_links = {}
     section_start = {}
