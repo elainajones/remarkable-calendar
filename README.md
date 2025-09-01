@@ -137,6 +137,10 @@ following command will be used.
 
 ### Adding custom dates
 
+> [!NOTE]
+> For those who observe Easter, please refer to [Dates for Easter](#dates-for-easter)
+> especially if you recognize the Easter Orthodox or Julian calendar date.
+
 Custom dates can be added to the calendar by editing the `dates.csv`  
 file or supplying a custom path using the `--date-file` argument.  
 The file `dates.csv` will contain examples you can use as reference.
@@ -158,29 +162,29 @@ the steps below.
 - "Short Descriptions" should be kept under 16 chars for best results.
     - A longer description can still be added as the "Long Description".
 - Fixed dates (any event that falls on the same day of the month).
-    - "Order" MUST be left blank.
+    - "Position" MUST be left blank.
     - "Month", "Day", and "Short Description" columns MUST be filled.
 - Non-fixed dates (dates that fall on the second Sunday of the month, etc)
-    - "Day" MUST be left blank (the "Order" column is used instead).
-    - "Month", "Week Day", "Order" columns need to be filled.
-    - "Order" is order in which the event falls on a given "Week day".  
+    - "Day" MUST be left blank (the "Position" column is used instead).
+    - "Month", "Week Day", "Position" columns need to be filled.
+    - "Position" is order in which the event falls on a given "Week day".  
       For example, if an event falls on the 2nd Sunday of the "Month"  
-      use 2 for the "Order". If an event falls on the last Friday of the  
-      "Month" use -1. The second to last Friday is -2. Etc.
+      use `2` for the "Position". If an event falls on the last Friday of  
+      the "Month" use `-1`. The second to last Friday is `-2`. Etc.
 
 The following is the expected structure of the `dates.csv` file,  
 including examples for dates you can add. Notice some cells may remain  
 blank — this is normal.
 
-|Month|Day|Week Number|Week Day|Order|Short Description|Long Description         |
-|----:|--:|----------:|:-------|----:|:----------------|:------------------------|
-|1    |1  |           |        |     |New Year's       |Happy New year!          |
-|1    |7  |           |        |     |Example Range 1  |Example Range 1          |
-|1    |8  |           |        |     |                 |Example Range 1          |
-|1    |8  |           |        |     |Example Range 2  |Example Range 2          |
-|1    |9  |           |        |     |                 |                         |
-|1    |9  |           |        |     |Example Range 2  |Example Range 2          |
-|5    |   |           |Monday  |-1   |Memorial Day     |                         |
+|Month|Day|Week Number|Week Day|Position|Short Description|Long Description|
+|----:|--:|----------:|:-------|-------:|:----------------|:---------------|
+|1    |1  |           |        |        |New Year's       |Happy New year! |
+|1    |7  |           |        |        |Example Range 1  |Example Range 1 |
+|1    |8  |           |        |        |                 |Example Range 1 |
+|1    |8  |           |        |        |Example Range 2  |Example Range 2 |
+|1    |9  |           |        |        |                 |                |
+|1    |9  |           |        |        |Example Range 2  |Example Range 2 |
+|5    |   |           |Monday  |-1      |Memorial Day     |                |
 
 - Multiple events can be added for the same day.
     - These will be displayed one after the other in the same order they  
@@ -194,6 +198,37 @@ blank — this is normal.
 
 For example, using the above table:
 ![](./img/example_date_range.png)
+
+#### Dates for Easter
+
+The date for Easter is determined by several special rules, usually  
+occurring the first Sunday after the Spring Equinox but even this  
+explanation is an over simplification. Additional rules, such as whether  
+the equinox occurs on a Sunday and whether the equinox is the date  
+recognized by the Church or the mathematical approximation of the  
+Metonic cycle further complicate how Easter is calculated.
+
+Luckily, adding Easter to your calendar is much easier but will differ  
+slightly from how other dates are added.
+
+- Under the "Short description", simply enter "Easter". The script  
+  will recognize this as a special name and calculate Easter for you.
+- Under the "Position" column, enter a value (1 or 2) from the table  
+  below that corresponds to the date you observe Easter.
+    - Unlike other dates, this is not the order of a week day but is  
+      used as a constant for the internal Easter calculation.
+- You may add a custom "Long Description", otherwise this will default  
+  to the value of "Short Description" (i.e. "Easter").
+- **Leave all other columns blank**
+    - If the date you observe Easter is not listed below, you may enter  
+      the "Month" and "Day" fields manually to override the calculation  
+      with a custom date (e.g. Coptic Easter). This will only work for  
+      single calendar years.
+
+| Position | Easter Date                | Example                          |
+|---------:|:---------------------------|:---------------------------------|
+|1         | Orthodox (Julian) Easter   | Sunday April 12, 2026            |
+|2         | Western (Gregorian) Easter | Sunday April 5, 2026             |
 
 ## Using the source code
 
