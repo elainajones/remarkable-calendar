@@ -87,7 +87,7 @@ def get_important_dates(
                     end = datetime(year=year + 1, month=1, day=1)
 
                 for i in range((end - start).days):
-                    date = start + timedelta(days=i)
+                    date = start + timedelta(days=i - 1)
 
                     if not pos:
                         break
@@ -106,7 +106,7 @@ def get_important_dates(
                     end = datetime(year=year + 1, month=1, day=1)
 
                 for i in range((end - start).days):
-                    date = end - timedelta(days=i)
+                    date = end - timedelta(days=i + 1)
 
                     if not pos:
                         break
