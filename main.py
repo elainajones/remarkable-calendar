@@ -123,6 +123,44 @@ def get_important_dates(
     return important_dates
 
 
+def get_version(script_dir):
+    """Get the version
+
+    Args:
+        script_dir: Root directory of entrypoint code
+    """
+    version_file = os.path.join(script_dir, 'version.txt')
+    data = {}
+
+    if os.path.isfile(version_file):
+        with open(version_file, 'r', encoding='utf-8') as f:
+            for line in f:
+                k, sep, v = line.partition('=')
+                if not sep:
+                    continue
+                data[k.strip()] = v.strip()
+
+        python_version = data['python'].split()[-1]
+        pyinstaller_version = data['pyinstaller']
+        built = data['built']
+        branch = data['branch']
+        version = data['version']
+
+        dt_utc = datetime.fromisoformat(built.replace("Z", "+00:00"))
+        dt_local = dt_utc.astimezone()
+
+        built = dt_local.strftime('%b %d %Y, %X')
+
+        version_str = (
+            f'{version} ({branch}, {built}) '
+            f'[Python {python_version}, PyInstaller {pyinstaller_version}]'
+        )
+    else:
+        version_str = ''
+
+    return version_str
+
+
 def main(
     date_start: str,
     date_end: str,
@@ -1175,7 +1213,12 @@ def main(
 
 
 if __name__ == '__main__':
-    # Set default interval as string.
+    # Path where this file is running from. When run as a Python file,
+    # this is the directory where main.py is located. When bundled
+    # as a PyInstaller executable, this will be a temp location. This is
+    # important for locating data files bundled with Pyinstaller and
+    # must be defined ASAP since imported modules use a different path.
+    current_script_dir = os.path.dirname(os.path.realpath(__file__))
     start_date = f'{datetime.today().year}-01-01'
     end_date = f'{datetime.today().year + 1}-02-01'
 
@@ -1226,6 +1269,12 @@ if __name__ == '__main__':
     )
     parser.add_argument('--out', default=save_path)
     parser.add_argument('--date-file', default=date_file)
+    parser.add_argument(
+        '-V',
+        '--version',
+        action='version',
+        version=get_version(current_script_dir),
+    )
 
     args = parser.parse_args()
     # Convert user input date string to datetime obj
