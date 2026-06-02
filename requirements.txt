@@ -4,19 +4,19 @@
 #
 #    pip-compile --output-file=requirements.txt requirements.txt.old
 #
-dateparser==1.2.1
+dateparser==1.4.0
     # via -r requirements.txt.old
 defusedxml==0.7.1
     # via
     #   -r requirements.txt.old
     #   fpdf2
-fonttools==4.54.1
+fonttools==4.63.0
     # via
     #   -r requirements.txt.old
     #   fpdf2
-fpdf2==2.8.3
+fpdf2==2.8.7
     # via -r requirements.txt.old
-pillow==10.4.0
+pillow==12.2.0
     # via
     #   -r requirements.txt.old
     #   fpdf2
@@ -24,19 +24,19 @@ python-dateutil==2.9.0.post0
     # via
     #   -r requirements.txt.old
     #   dateparser
-pytz==2024.2
+pytz==2026.2
     # via
     #   -r requirements.txt.old
     #   dateparser
-regex==2024.9.11
+regex==2026.5.9
     # via
     #   -r requirements.txt.old
     #   dateparser
-six==1.16.0
+six==1.17.0
     # via
     #   -r requirements.txt.old
     #   python-dateutil
-tzlocal==5.2
+tzlocal==5.3.1
     # via
     #   -r requirements.txt.old
     #   dateparser
