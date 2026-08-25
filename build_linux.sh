@@ -45,14 +45,14 @@ EOF
 path="$(realpath res/GentiumPlus-6.200/GentiumPlus-Regular.ttf)"
 
 pyinstaller \
-	--noconfirm \
-	--onefile \
-	--clean \
-	--specpath .pyinstaller/spec \
-	--workpath .pyinstaller/build \
-	--distpath ./dist \
-	--name calendar-creator-linux64.bin \
-	--add-data "${path}:res/GentiumPlus-6.200/" \
-	--add-data "$(realpath version.txt):." \
+    --noconfirm \
+    --onefile \
+    --clean \
+    --specpath .pyinstaller/spec \
+    --workpath .pyinstaller/build \
+    --distpath ./dist \
+    --name calendar-creator-linux64.bin \
+    --add-data "${path}:res/GentiumPlus-6.200/" \
+    --add-data "$(realpath version.txt):." \
     --path . \
-	main.py
+    main.py

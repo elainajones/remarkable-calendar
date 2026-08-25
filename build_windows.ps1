@@ -42,11 +42,11 @@ pyinstaller `
     --noconfirm `
     --onefile `
     --clean `
-	--specpath .pyinstaller/spec `
-	--workpath .pyinstaller/build `
-	--distpath ./dist `
+    --specpath .pyinstaller/spec `
+    --workpath .pyinstaller/build `
+    --distpath ./dist `
     --name calendar-creator-win64.exe `
     --add-data "${path}:./res/GentiumPlus-6.200/" `
     --add-data "$((Resolve-Path version.txt).Path):." `
     --path . `
-	main.py
+    main.py
